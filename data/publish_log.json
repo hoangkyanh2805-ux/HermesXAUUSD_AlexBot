@@ -15,6 +15,40 @@
         "sl_hit_update": "SL hit on sig-001. Losses are part of trading - do not increase size to recover. Review the journal note when posted.",
         "result_summary": "Closed sig-001 - see journal for full result. Desk tracks lessons to improve process, not to promise future wins."
       }
+    },
+    {
+      "signal_id": "x",
+      "ts": "2026-06-29T15:52:11.785917+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "a": "b"
+      }
+    },
+    {
+      "signal_id": "x",
+      "ts": "2026-06-29T15:54:31.514250+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "a": "b"
+      }
+    },
+    {
+      "signal_id": "sig-sell-4088",
+      "ts": "2026-06-29T16:16:22.829388+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "pre_signal_context": "London session — XAUUSD watching london breakout. Volatility normal. No major news conflict flagged for this window.",
+        "signal_drop": "[GOLD] XAUUSD | London Breakout\nDIR: SELL @ 4088.00 - 4092.00\nSL: 4099.00\nTP: 4076.00\nRR: 1:1.6",
+        "reason_message": "Setup: london breakout during london session. Structure meets desk rules. Size for your account; see pinned lot guide.",
+        "risk_reminder": "Trade at your own risk. Use a stop loss. Past results do not guarantee future outcomes. Questions - DM.",
+        "live_update": "Signal sig-sell-4088 is live. SELL XAUUSD active. Manage per your plan; consider partials if momentum fades.",
+        "tp_hit_update": "TP reached on sig-sell-4088. Well done if you followed your plan. Journal your result and stay disciplined on the next setup.",
+        "sl_hit_update": "SL hit on sig-sell-4088. Losses are part of trading - do not increase size to recover. Review the journal note when posted.",
+        "result_summary": "Closed sig-sell-4088 - see journal for full result. Desk tracks lessons to improve process, not to promise future wins."
+      }
     }
   ]
 }

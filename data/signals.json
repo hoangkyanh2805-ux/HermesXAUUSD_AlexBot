@@ -33,6 +33,24 @@
       "setup_name": "invalid-no-sl",
       "status": "draft",
       "lot_category": null
+    },
+    {
+      "signal_id": "sig-sell-4088",
+      "pair": "XAUUSD",
+      "direction": "sell",
+      "entry_low": 4088.0,
+      "entry_high": 4092.0,
+      "stop_loss": 4099.0,
+      "take_profits": [
+        4076.0,
+        4066.0
+      ],
+      "session": "london",
+      "news_risk": "low",
+      "market_bias": "bearish",
+      "setup_name": "london-breakout",
+      "status": "live",
+      "lot_category": null
     }
   ]
 }

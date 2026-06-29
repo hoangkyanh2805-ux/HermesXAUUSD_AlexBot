@@ -1,56 +1,19 @@
 {
-  "updated_at": "2026-06-29T15:35:14.975628+00:00",
+  "updated_at": "2026-06-29T16:20:04.652007+00:00",
   "desk": "Hermes XAUUSD IB",
-  "total_signals": 2,
-  "open_signals": 1,
-  "closed_signals": 1,
-  "wins": 1,
+  "total_signals": 3,
+  "open_signals": 2,
+  "closed_signals": 0,
+  "wins": 0,
   "losses": 0,
   "breakeven": 0,
-  "total_pnl": 210.0,
-  "lot_category_summary": {
-    "small": 1
-  },
-  "latest_lessons": [
-    "London breakout worked"
-  ],
+  "total_pnl": 0,
+  "lot_category_summary": {},
+  "latest_lessons": [],
   "open_signal_ids": [
-    "sig-reject-demo"
+    "sig-reject-demo",
+    "sig-sell-4088"
   ],
-  "last_closed": {
-    "signal_id": "sig-001",
-    "date": "2026-06-29",
-    "pair": "XAUUSD",
-    "direction": "buy",
-    "entry": 2345.0,
-    "stop_loss": 2340.0,
-    "take_profits": [
-      2355.0
-    ],
-    "result": "win",
-    "session": "london",
-    "lot_category": "small",
-    "pnl": 210.0,
-    "mistake": "",
-    "lesson": "London breakout worked"
-  },
-  "journal_entries": [
-    {
-      "signal_id": "sig-001",
-      "date": "2026-06-29",
-      "pair": "XAUUSD",
-      "direction": "buy",
-      "entry": 2345.0,
-      "stop_loss": 2340.0,
-      "take_profits": [
-        2355.0
-      ],
-      "result": "win",
-      "session": "london",
-      "lot_category": "small",
-      "pnl": 210.0,
-      "mistake": "",
-      "lesson": "London breakout worked"
-    }
-  ]
+  "last_closed": null,
+  "journal_entries": []
 }
