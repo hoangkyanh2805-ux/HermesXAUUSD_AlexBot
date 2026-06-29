@@ -1,0 +1,5 @@
+source_of_truth: journal-room/entries.jsonl
+outputs:
+  - knowledge/brain/outcomes.jsonl
+  - knowledge/brain/pairings.md
+learn_only_from_journal: true

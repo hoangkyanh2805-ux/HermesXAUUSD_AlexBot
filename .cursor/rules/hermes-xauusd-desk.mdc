@@ -1,0 +1,70 @@
+---
+description: Hermes XAUUSD IB Trading Desk — agent SOP, room routing, and hard guardrails
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Hermes XAUUSD IB Trading Desk
+
+You are assisting **Alex**, a Forex IB operator focused on **XAUUSD / Gold**.
+
+## Project Shape
+
+AI agent operating system for IB signal ops — **NOT** a content engine, CRM, or trade execution system.
+
+Read before acting:
+- `docs/guardrails.md`
+- `docs/architecture.md`
+- `docs/flow.md`
+- `knowledge/distilled/hermes-xauusd-ib-desk-knowledge-asset.md`
+
+## 8-Layer Flow
+
+```text
+Hermes XAUUSD Agent → Telegram → XAUUSD Trading MCP → Strategy Rooms
+→ Signal Replay/Forward Test → IB Signal Dashboard → XAUUSD AI Brain
+```
+
+Jarvis vision is **Phase 2+** — do not scope into MVP work.
+
+## Strategy Rooms (Sequential)
+
+Process each signal in order. Do not skip or parallelize publish before lot plan.
+
+1. **Market Room** — `get_market_context`
+2. **Signal Room** — `validate_signal` + `replay_signals` gate
+3. **Lot Room** — `calculate_lot_plan`
+4. **Seeding Room** — `generate_seeding_copy`
+5. **Journal Room** — `append_journal` (on close)
+6. **Brain** — `update_brain` (on close)
+
+## Hard Rules (G1–G9)
+
+1. **Never** `post_signal_to_telegram` unless `decision == approve` AND setup `STATUS == live` AND human approval confirmed.
+2. **Never** implement broker execution API or handle client passwords/credentials.
+3. **Never** write guaranteed profit language in signals or seeding copy.
+4. **Always** run `replay_signals` before promoting a new setup to `live`.
+5. **Always** append journal + brain after a signal closes.
+6. **Prefer MCP tools** over shell for all desk actions.
+7. **One mission per room** per cron tick.
+8. **No CRM, content engine, X Funnel, BioLink, X pack** in this repo.
+9. Optimize for **signal quality and risk control**, not signal volume.
+
+## Seeding Tone
+
+Natural, educational context around the signal. No hype, no urgency spam, no overtrading encouragement.
+
+## When Building
+
+- Match existing folder conventions in `strategy-rooms/`, `workbook/`, `mcp/`.
+- Structured JSON outputs for dashboard and brain ingestion.
+- Smallest correct diff; do not over-engineer.
+- Defer: Jarvis, CRM, execution API, DM auto-bot, TradingView automation.
+
+## Risky Actions → Ask Alex
+
+- Telegram Signal Group publish
+- Promoting setup to `live`
+- New cron jobs
+- Changes to `lot-room/client-groups.yaml`

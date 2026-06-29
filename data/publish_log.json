@@ -1,0 +1,20 @@
+{
+  "publishes": [
+    {
+      "signal_id": "sig-001",
+      "ts": "2026-06-29T15:35:14.852961+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "pre_signal_context": "London session — XAUUSD watching london breakout. Volatility normal. No major news conflict flagged for this window.",
+        "signal_drop": "[GOLD] XAUUSD | London Breakout\nDIR: BUY @ 2344.00 - 2346.00\nSL: 2340.00\nTP: 2355.00\nRR: 1:2.0",
+        "reason_message": "Setup: london breakout during london session. Structure meets desk rules. Reference tier: small - size for your own account.",
+        "risk_reminder": "Trade at your own risk. Use a stop loss. Past results do not guarantee future outcomes. Questions - DM.",
+        "live_update": "Signal sig-001 is live. BUY XAUUSD active. Manage per your plan; consider partials if momentum fades.",
+        "tp_hit_update": "TP reached on sig-001. Well done if you followed your plan. Journal your result and stay disciplined on the next setup.",
+        "sl_hit_update": "SL hit on sig-001. Losses are part of trading - do not increase size to recover. Review the journal note when posted.",
+        "result_summary": "Closed sig-001 - see journal for full result. Desk tracks lessons to improve process, not to promise future wins."
+      }
+    }
+  ]
+}

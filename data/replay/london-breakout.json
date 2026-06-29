@@ -1,0 +1,215 @@
+{
+  "setup_name": "london-breakout",
+  "signals": [
+    {
+      "id": "rep-001",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-002",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-003",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-004",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-005",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-006",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-007",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-008",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-009",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-010",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-011",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-012",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-013",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-014",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-015",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-016",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-017",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-018",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-019",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-020",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-021",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-022",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-023",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-024",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-025",
+      "session": "london",
+      "direction": "buy",
+      "result": "win",
+      "r": 2.0
+    },
+    {
+      "id": "rep-026",
+      "session": "london",
+      "direction": "buy",
+      "result": "loss",
+      "r": -1.0
+    },
+    {
+      "id": "rep-027",
+      "session": "london",
+      "direction": "buy",
+      "result": "loss",
+      "r": -1.0
+    },
+    {
+      "id": "rep-028",
+      "session": "london",
+      "direction": "buy",
+      "result": "loss",
+      "r": -1.0
+    },
+    {
+      "id": "rep-029",
+      "session": "london",
+      "direction": "buy",
+      "result": "loss",
+      "r": -1.0
+    },
+    {
+      "id": "rep-030",
+      "session": "london",
+      "direction": "buy",
+      "result": "loss",
+      "r": -1.0
+    }
+  ]
+}

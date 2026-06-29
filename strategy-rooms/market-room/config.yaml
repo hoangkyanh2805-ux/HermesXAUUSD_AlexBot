@@ -1,0 +1,6 @@
+symbol: XAUUSD
+sessions:
+  london: { start_utc: "07:00", end_utc: "11:00" }
+  ny: { start_utc: "13:00", end_utc: "17:00" }
+spread_threshold_pts: 35
+volatility_levels: [low, normal, elevated, high]

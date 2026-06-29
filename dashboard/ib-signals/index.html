@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IB Signal Dashboard — Hermes XAUUSD</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e7ecf3; --muted: #8b9cb3; --green: #3dd68c; --red: #f07178; --gold: #e8c468; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; }
+    .card .label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
+    .card .value { font-size: 1.5rem; font-weight: 600; margin-top: 0.25rem; }
+    .win { color: var(--green); }
+    .loss { color: var(--red); }
+    .gold { color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #2a3548; }
+    th { color: var(--muted); font-weight: 500; }
+    .lessons li { margin: 0.35rem 0; color: var(--muted); }
+    #err { color: var(--red); display: none; }
+  </style>
+</head>
+<body>
+  <h1>IB Signal Dashboard</h1>
+  <p class="sub">Hermes XAUUSD IB Desk — read-only</p>
+  <p id="err">Could not load state.json — run demo or /dashboard first.</p>
+
+  <div class="grid" id="stats"></div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="label">Last closed signal</div>
+    <pre id="last-closed" style="margin:0.5rem 0 0;font-size:0.8rem;white-space:pre-wrap"></pre>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="label">Journal</div>
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Result</th><th>PnL</th><th>Lot</th><th>Lesson</th></tr></thead>
+      <tbody id="journal"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="label">Latest lessons</div>
+    <ul class="lessons" id="lessons"></ul>
+  </div>
+
+  <script>
+    async function load() {
+      try {
+        const r = await fetch('state.json?' + Date.now());
+        if (!r.ok) throw new Error('missing');
+        const s = await r.json();
+        document.getElementById('err').style.display = 'none';
+        document.getElementById('stats').innerHTML = [
+          ['Total', s.total_signals, ''],
+          ['Open', s.open_signals, ''],
+          ['Closed', s.closed_signals, ''],
+          ['Wins', s.wins, 'win'],
+          ['Losses', s.losses, 'loss'],
+          ['Total PnL', s.total_pnl, 'gold'],
+        ].map(([l,v,c]) => `<div class="card"><div class="label">${l}</div><div class="value ${c}">${v}</div></div>`).join('');
+        document.getElementById('last-closed').textContent = s.last_closed
+          ? JSON.stringify(s.last_closed, null, 2) : '(none)';
+        document.getElementById('journal').innerHTML = (s.journal_entries || []).map(e =>
+          `<tr><td>${e.signal_id}</td><td>${e.date}</td><td class="${e.result==='win'?'win':'loss'}">${e.result}</td><td>${e.pnl}</td><td>${e.lot_category}</td><td>${e.lesson||''}</td></tr>`
+        ).join('') || '<tr><td colspan="6">No entries</td></tr>';
+        document.getElementById('lessons').innerHTML = (s.latest_lessons || [])
+          .map(l => `<li>${l}</li>`).join('') || '<li>(none)</li>';
+        document.querySelector('.sub').textContent = 'Updated: ' + (s.updated_at || '');
+      } catch (e) {
+        document.getElementById('err').style.display = 'block';
+      }
+    }
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>

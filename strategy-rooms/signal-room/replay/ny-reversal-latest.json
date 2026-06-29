@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "setup_name": "ny-reversal",
+  "pass": false,
+  "trades": 30,
+  "wins": 10,
+  "losses": 20,
+  "win_rate": 0.3333,
+  "avg_r": -0.2667,
+  "max_dd": 1.6667,
+  "gate": {
+    "min_win_rate": 0.55,
+    "min_avg_r": 1.5,
+    "max_drawdown": 0.15,
+    "min_sample_size": 20
+  },
+  "reasons": [
+    "Win rate 33.33% < 55%",
+    "Avg R -0.27 < 1.5",
+    "Max drawdown 166.67% > 15%"
+  ],
+  "suggested_action": "Do not promote — improve setup or gather more data."
+}

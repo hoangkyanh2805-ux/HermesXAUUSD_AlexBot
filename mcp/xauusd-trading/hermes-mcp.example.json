@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "xauusd-trading": {
+      "command": "python",
+      "args": [
+        "mcp/xauusd-trading/server.py"
+      ],
+      "cwd": "G:/Other computers/My Computer/Project/hermes-xauusd-ib-desk",
+      "env": {}
+    }
+  }
+}

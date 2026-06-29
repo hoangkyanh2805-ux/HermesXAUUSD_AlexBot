@@ -1,0 +1,5 @@
+# Hermes XAUUSD IB Desk
+
+# Core MVP — stdlib only
+# MCP server for Hermes Agent:
+mcp>=1.2.0

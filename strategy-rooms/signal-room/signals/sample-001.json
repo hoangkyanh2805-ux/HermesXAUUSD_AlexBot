@@ -1,0 +1,12 @@
+{
+  "signal_id": "sig-001",
+  "setup_name": "london-breakout",
+  "direction": "buy",
+  "entry": 2345.5,
+  "sl": 2340.0,
+  "tp": 2355.0,
+  "rr": 2.1,
+  "rationale_short": "Breakout above Asian range high during London open",
+  "created_at": "2026-06-29T08:00:00Z",
+  "status": "draft"
+}

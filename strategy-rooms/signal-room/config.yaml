@@ -1,0 +1,10 @@
+setup_name: london-breakout
+min_rr: 1.5
+allowed_sessions: [london]
+replay_required_before_live: true
+
+replay_gate:
+  min_win_rate: 0.55
+  min_avg_r: 1.5
+  max_drawdown: 0.15
+  min_sample_size: 20

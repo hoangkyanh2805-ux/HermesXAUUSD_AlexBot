@@ -1,0 +1,3 @@
+max_messages_per_signal: 3
+guidelines: ../../telegram/seeding-guidelines.md
+signal_format: ../../telegram/signal-format.md

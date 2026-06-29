@@ -1,0 +1,30 @@
+# Client Groups — Example Configuration
+
+> Copy to `strategy-rooms/lot-room/client-groups.yaml` and customize.
+> Owner: Alex | Changes require G6 approval.
+
+groups:
+  conservative:
+    description: Lower risk clients, smaller accounts
+    risk_pct_per_trade: 0.5
+    max_lot: 0.05
+    max_open_signals: 1
+    notes: Default for new clients
+
+  standard:
+    description: Experienced clients with defined risk tolerance
+    risk_pct_per_trade: 1.0
+    max_lot: 0.10
+    max_open_signals: 2
+    notes: Requires explicit client acknowledgment of risk
+
+defaults:
+  symbol: XAUUSD
+  account_currency: USD
+  pip_value_per_0_01_lot: 0.10  # approximate; tune per broker spec
+
+rules:
+  - Never exceed max_lot per group
+  - Never exceed max_open_signals per group
+  - Round lot down to broker step (0.01)
+  - If signal SL distance unknown, return error — do not guess lot

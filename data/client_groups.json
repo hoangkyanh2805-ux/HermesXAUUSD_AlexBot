@@ -1,0 +1,27 @@
+{
+  "groups": {
+    "conservative": {
+      "risk_pct": 0.5,
+      "max_risk_pct": 0.5,
+      "lot_category": "micro",
+      "max_lot": 0.05
+    },
+    "standard": {
+      "risk_pct": 1.0,
+      "max_risk_pct": 1.0,
+      "lot_category": "small",
+      "max_lot": 0.1
+    },
+    "aggressive": {
+      "risk_pct": 1.5,
+      "max_risk_pct": 2.0,
+      "lot_category": "medium",
+      "max_lot": 0.15
+    }
+  },
+  "rules": {
+    "no_martingale": true,
+    "no_recovery_increase": true,
+    "pip_value_per_0_01_lot": 0.1
+  }
+}

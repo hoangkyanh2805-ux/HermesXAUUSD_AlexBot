@@ -1,0 +1,5 @@
+state_file: ../../dashboard/ib-signals/state.json
+refresh_on:
+  - journal_append
+  - signal_status_update
+  - brain_update
