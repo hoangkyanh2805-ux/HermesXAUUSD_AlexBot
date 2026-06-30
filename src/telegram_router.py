@@ -8,7 +8,11 @@ from typing import Any
 from src.ai_brain import print_brain, summarize
 from src.activity_log import log_event, log_gate_decision
 from src.common import data_path, load_json, save_json
-from src.correlation import build_correlation_data
+from src.correlation import (
+    build_correlation_data,
+    snapshot_correlation_at_publish,
+    snapshot_correlation_at_seed,
+)
 from src.dashboard import export_state, get_summary, print_dashboard
 from src.desk_config import load_market_config
 from src.journal import append_journal, get_entry
@@ -24,7 +28,7 @@ from src.spread_audit import record_spread
 from src.spread_guard import guard_or_block
 from src.spread_monitor import record_at_check, start_background_monitor
 from src.supabase_writer import write_pipeline_step
-from src.telegram_notify import send_safety_lock_alert
+from src.telegram_notify import send_correlation_alert, send_safety_lock_alert
 from src.forward_test import check_forward_test_stale, start_forward_test
 from src.signal_replay import get_setup_status, promote_setup, replay_signals
 from src.volume_tracker import record_volume
@@ -406,6 +410,13 @@ def _cmd_seed_signal(args: list[str]) -> dict[str, Any]:
     if not guard.get("ok"):
         return {"ok": False, "error": f"Spread guard — seeding blocked ({guard.get('action')})."}
 
+    correlation_data = snapshot_correlation_at_seed(signal, gate, live=True)
+    if correlation_data.get("conflict"):
+        send_correlation_alert(signal_id, correlation_data)
+
+    ctx = load_json(data_path("market_context.json"), {})
+    spread_pts = float(ctx.get("spread_pts", spread_pts))
+
     lot = _lot_cache.get(signal_id, {})
     lot_cat = lot.get("suggested_lot_category")
     messages = generate_seeding_dict(signal, lot_category=lot_cat)
@@ -424,9 +435,14 @@ def _cmd_seed_signal(args: list[str]) -> dict[str, Any]:
             s["spread_at_seed"] = spread_pts
     save_json(data_path("signals.json"), data)
 
-    log_event("SIGNAL_SEEDED", signal_id=signal_id, spread_value=spread_pts)
+    log_event(
+        "SIGNAL_SEEDED",
+        signal_id=signal_id,
+        spread_value=spread_pts,
+        payload={"correlation_data": correlation_data},
+    )
     write_pipeline_step("seeded", signal_id)
-    return {"ok": True, "data": messages}
+    return {"ok": True, "data": {**messages, "correlation_data": correlation_data}}
 
 
 def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
@@ -477,8 +493,13 @@ def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
     if not result.get("ok"):
         return result
 
+    correlation_data: dict[str, Any] | None = None
     if not dry_run:
         spread_pts = float(ctx.get("spread_pts", 0))
+        correlation_data = snapshot_correlation_at_publish(signal, gate, live=True)
+        if correlation_data.get("conflict"):
+            send_correlation_alert(signal_id, correlation_data)
+
         record_spread(signal_id=signal_id, event="entry", spread_pts=spread_pts, session=ctx.get("session", ""))
 
         data = load_json(data_path("signals.json"), {"signals": []})
@@ -497,9 +518,12 @@ def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
         signal_id=signal_id,
         event_note="dry_run" if dry_run else "published",
         spread_value=spread_pts,
+        payload={"correlation_data": correlation_data} if correlation_data else None,
     )
     write_pipeline_step("published", signal_id, dry_run=dry_run)
     export_state()
+    if correlation_data:
+        result = {**result, "data": {**(result.get("data") or {}), "correlation_data": correlation_data}}
     return result
 
 

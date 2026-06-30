@@ -3,6 +3,7 @@
 telegram/.env
 supabase/.env
 metabase/.env
+market_data/.env
 metabase/metabase.jar
 metabase/data/
 plugins/

@@ -37,11 +37,12 @@ def _run_tests() -> dict:
 def _live_market() -> dict:
     ctx = get_market_context(live=True)
     source = ctx.get("source", "mock")
-    ok = source == "live" or ctx.get("live_fetch_error")
+    ok = source == "live"
+    provider = ctx.get("provider", "unknown")
     return _step(
         "live_market_data",
-        source == "live",
-        f"source={source} dxy={ctx.get('dxy_direction')} us10y={ctx.get('us10y_direction')}",
+        ok,
+        f"source={source} provider={provider} dxy={ctx.get('dxy_direction')} us10y={ctx.get('us10y_direction')}",
     )
 
 

@@ -166,10 +166,14 @@ select
   round(p.target_lots - c.current_lots, 2) as remaining_lots,
   c.trading_days_passed,
   greatest(0, c.days_in_month - c.trading_days_passed) as trading_days_remaining,
-  round(
-    (p.target_lots - c.current_lots) / nullif(c.days_in_month - c.trading_days_passed, 0),
-    2
-  ) as required_daily_pace,
+  case
+    when greatest(0, c.days_in_month - c.trading_days_passed) = 0 then 0
+    else round(
+      (p.target_lots - c.current_lots)
+        / greatest(1, c.days_in_month - c.trading_days_passed),
+      2
+    )
+  end as required_daily_pace,
   round(c.current_lots / nullif(c.trading_days_passed, 0), 2) as actual_daily_pace,
   round(
     (c.current_lots / nullif(c.trading_days_passed, 0)) * c.days_in_month,

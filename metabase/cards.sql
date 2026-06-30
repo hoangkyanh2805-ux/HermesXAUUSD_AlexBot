@@ -251,3 +251,27 @@ select
   coalesce(sum(lot_total), 0) as total_lots
 from trades
 where closed_at >= date_trunc('month', now());
+
+-- =============================================================================
+-- CARD 21 — Correlation risk alerts (24h) — RED ALERT TABLE
+-- Viz: Table — recent CORRELATION_RISK events
+-- =============================================================================
+select
+  signal_id,
+  event_note,
+  status_after as gate_decision,
+  created_at
+from activity_logs
+where event_type = 'CORRELATION_RISK'
+  and created_at >= now() - interval '24 hours'
+order by created_at desc
+limit 20;
+
+-- =============================================================================
+-- CARD 22 — Correlation risk count (24h) — RED ALERT SCALAR
+-- Viz: Number / Scalar — pin top of dashboard
+-- =============================================================================
+select count(*) as correlation_risk_alerts_24h
+from activity_logs
+where event_type = 'CORRELATION_RISK'
+  and created_at >= now() - interval '24 hours';

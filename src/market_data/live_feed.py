@@ -1,8 +1,9 @@
-"""Live macro quotes — DXY + US10Y via Yahoo Finance (stdlib only)."""
+"""Live macro quotes — DXY + US10Y (Alpha Vantage primary, Yahoo fallback)."""
 
 from __future__ import annotations
 
 import json
+import os
 import urllib.error
 import urllib.request
 from typing import Any
@@ -69,8 +70,8 @@ def fetch_instrument(symbol: str, *, label: str) -> dict[str, Any]:
     }
 
 
-def fetch_live_macro() -> dict[str, Any]:
-    """Fetch DXY + US10Y directions. Raises on total failure."""
+def fetch_yahoo_macro() -> dict[str, Any]:
+    """Fetch DXY + US10Y directions via Yahoo Finance. Raises on total failure."""
     dxy = fetch_instrument(DXY_SYMBOL, label="DXY")
     us10y = fetch_instrument(US10Y_SYMBOL, label="US10Y")
     xauusd_price: float | None = None
@@ -90,14 +91,25 @@ def fetch_live_macro() -> dict[str, Any]:
     }
 
 
-def fetch_live_macro_safe() -> dict[str, Any]:
-    """Return live macro or mock fallback with error note."""
+def fetch_live_macro() -> dict[str, Any]:
+    """Fetch macro using configured provider (raises on total failure)."""
+    macro = fetch_live_macro_safe()
+    if macro.get("source") != "live":
+        raise ValueError(macro.get("error") or "live macro fetch failed")
+    return macro
+
+
+def _provider_name() -> str:
+    return os.environ.get("MARKET_DATA_PROVIDER", "alpha_vantage").lower()
+
+
+def _fetch_yahoo_safe() -> dict[str, Any]:
     try:
-        return fetch_live_macro()
+        return fetch_yahoo_macro()
     except (urllib.error.URLError, ValueError, KeyError, OSError, json.JSONDecodeError) as exc:
         return {
             "source": "mock",
-            "provider": "fallback",
+            "provider": "yahoo_finance",
             "error": str(exc)[:200],
             "dxy_direction": "neutral",
             "us10y_direction": "neutral",
@@ -105,3 +117,29 @@ def fetch_live_macro_safe() -> dict[str, Any]:
             "us10y_context": {"direction": "neutral", "source": "mock", "error": str(exc)[:120]},
             "xauusd_price": None,
         }
+
+
+def fetch_live_macro_safe() -> dict[str, Any]:
+    """Return live macro (Alpha Vantage -> Yahoo fallback) or mock with error."""
+    provider = _provider_name()
+    if provider == "yahoo":
+        return _fetch_yahoo_safe()
+
+    from src.market_data.alpha_vantage import fetch_live_macro_alpha_safe
+
+    av = fetch_live_macro_alpha_safe()
+    if av.get("source") == "live":
+        return av
+
+    yahoo = _fetch_yahoo_safe()
+    if yahoo.get("source") == "live":
+        yahoo["fallback_from"] = "alpha_vantage"
+        if av.get("error"):
+            yahoo["primary_error"] = av["error"]
+        return yahoo
+
+    merged = dict(av)
+    if yahoo.get("error") and not merged.get("error"):
+        merged["error"] = yahoo["error"]
+    merged["provider"] = "fallback"
+    return merged

@@ -84,3 +84,19 @@ def send_safety_lock_alert(lock_detail: str, *, floating_risk_pct: float, cap_pc
         f"Action: reduce open exposure before new seeds."
     )
     return send_operator_alert(msg, severity="critical")
+
+
+def send_correlation_alert(signal_id: str, correlation_data: dict[str, Any]) -> dict[str, Any]:
+    """Red alert when DXY/US10Y conflicts at seed snapshot."""
+    tag = correlation_data.get("tag", "unknown")
+    score = correlation_data.get("condition_score")
+    warnings = correlation_data.get("warnings") or correlation_data.get("reasons") or []
+    warn_line = warnings[0] if warnings else "Correlation conflict detected"
+    msg = (
+        f"Hermes IB Desk — CORRELATION_RISK at seed\n"
+        f"Signal: {signal_id}\n"
+        f"Tag: {tag} | Score: {score}\n"
+        f"{warn_line}\n"
+        f"DXY: {correlation_data.get('dxy_direction')} | US10Y: {correlation_data.get('us10y_direction')}"
+    )
+    return send_operator_alert(msg, severity="critical")

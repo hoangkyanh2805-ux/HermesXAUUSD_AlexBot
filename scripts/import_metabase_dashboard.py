@@ -36,6 +36,8 @@ CARD_META: dict[int, dict[str, str]] = {
     18: {"name": "Correlation risk outcomes", "display": "bar"},
     19: {"name": "Blocked trades by reason", "display": "bar"},
     20: {"name": "IB Commission estimate", "display": "scalar"},
+    21: {"name": "[RED] Correlation Risk Alerts (24h)", "display": "table"},
+    22: {"name": "[RED] Correlation Risk Count (24h)", "display": "scalar"},
 }
 
 
@@ -169,15 +171,44 @@ class MetabaseClient:
 
     def set_dashboard_cards(self, dashboard_id: int, card_ids: list[int]) -> None:
         cards = []
+        # Pin correlation alert scalar (last card id) full-width on row 0
+        if len(card_ids) >= 22:
+            alert_scalar = card_ids[-1]
+            alert_table = card_ids[-2]
+            main_cards = card_ids[:-2]
+            cards.append(
+                {
+                    "id": -1,
+                    "card_id": alert_scalar,
+                    "row": 0,
+                    "col": 0,
+                    "size_x": 4,
+                    "size_y": 3,
+                }
+            )
+            cards.append(
+                {
+                    "id": -2,
+                    "card_id": alert_table,
+                    "row": 0,
+                    "col": 4,
+                    "size_x": 8,
+                    "size_y": 3,
+                }
+            )
+            row = 3
+        else:
+            main_cards = card_ids
+            row = 0
+
         col = 0
-        row = 0
-        for i, cid in enumerate(card_ids):
+        for i, cid in enumerate(main_cards):
             if i > 0 and i % 4 == 0:
                 row += 4
                 col = 0
             cards.append(
                 {
-                    "id": -1 - i,
+                    "id": -10 - i,
                     "card_id": cid,
                     "row": row,
                     "col": col,
