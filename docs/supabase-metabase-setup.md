@@ -1,7 +1,9 @@
 # Hermes XAUUSD IB Desk — Supabase + Metabase Setup
 
-> Phase E: đồng bộ `data/*.json` → Supabase → Metabase dashboards  
-> Volume KPI **chỉ báo cáo** — không trigger trade (G10)
+> **SOP OPS (tái sử dụng):** [knowledge/ops/supabase-metabase-reporting-sop.vi.md](../knowledge/ops/supabase-metabase-reporting-sop.vi.md)  
+> Phase E (done) · Phase 4 (next) · Phase 5 · Phase 6 optional
+
+See [reporting-roadmap.md](reporting-roadmap.md) for full phase map.
 
 ---
 
@@ -102,41 +104,18 @@ Signal không có SL (`sig-reject-demo`) được **bỏ qua** khi sync `signals
 
 ---
 
-## Bước 6 — Kết nối Metabase
+## Bước 6 — Kết nối Metabase (Phase 4)
 
-### Cài Metabase
+→ Chi tiết: [metabase-phase4-connect.md](metabase-phase4-connect.md)
 
-- [metabase.com](https://www.metabase.com) cloud, hoặc
-- Docker local: `docker run -d -p 3000:3000 metabase/metabase`
+Host: `db.tikouskusgdygktslmzj.supabase.co` | SSL: ON
 
-### Add database
+## Bước 7 — Metabase cards (Phase 5)
 
-1. Metabase → **Admin** → **Databases** → **Add database**
-2. Type: **PostgreSQL**
-3. Điền từ Supabase **Project Settings → Database**:
+→ SQL copy-paste: [`metabase/cards.sql`](../metabase/cards.sql)  
+→ Hướng dẫn: [metabase-phase5-dashboard.md](metabase-phase5-dashboard.md)
 
-| Field | Giá trị |
-|-------|---------|
-| Host | `db.<project-ref>.supabase.co` |
-| Port | `5432` |
-| Database | `postgres` |
-| Username | `postgres` |
-| Password | Database password |
-| SSL | **ON** |
-
-4. **Save** → đợi sync schema
-
-### Hoặc dùng connection string
-
-```
-postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
-```
-
----
-
-## Bước 7 — Tạo Metabase cards (20 cards)
-
-Tham chiếu knowledge asset **§3.8**:
+20 cards: volume, risk, spread, signal audit (xem bảng cũ bên dưới hoặc file SQL).
 
 | # | Card | Nguồn SQL |
 |---|------|-----------|

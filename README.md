@@ -14,6 +14,7 @@ Agent-operated IB signal desk for XAUUSD / Gold.
 
 - [Knowledge Asset](knowledge/distilled/hermes-xauusd-ib-desk-knowledge-asset.md)
 - [Flow](docs/flow.md)
+- **[SOP OPS — Supabase + Metabase](knowledge/ops/supabase-metabase-reporting-sop.vi.md)** (tái sử dụng cho dự án sau)
 
 ## Agent
 
@@ -30,7 +31,9 @@ Agent-operated IB signal desk for XAUUSD / Gold.
 ## Status
 
 **Phase D complete** — Risk-First Volume Desk (correlation filter, safety locks, lot formula, spread audit, volume KPI).  
-**Phase E complete** — Sync `data/*.json` → Supabase + [Metabase setup](docs/supabase-metabase-setup.md).
+**Phase E complete** — Sync `data/*.json` → Supabase + [Metabase setup](docs/supabase-metabase-setup.md).  
+**Phase 4–5** — [SOP OPS](knowledge/ops/supabase-metabase-reporting-sop.vi.md) · [Connect Metabase](docs/metabase-phase4-connect.md) · [BI cards](docs/metabase-phase5-dashboard.md) · [Task checklist](workbook/ops/supabase-metabase-task.md)  
+**Phase 6 optional** — Vercel only if custom portal needed ([roadmap](docs/reporting-roadmap.md)).
 
 ```bash
 python src/main.py              # Phase C demo (replay -> publish -> journal)

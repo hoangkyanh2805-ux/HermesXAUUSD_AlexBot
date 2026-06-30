@@ -2,6 +2,9 @@
 .env
 telegram/.env
 supabase/.env
+metabase/metabase.jar
+metabase/data/
+plugins/
 *.env.local
 
 # Python
