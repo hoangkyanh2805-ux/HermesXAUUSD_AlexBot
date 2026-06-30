@@ -121,3 +121,30 @@ def evaluate_safety_locks(
         "risk_state": state,
         "spread_ok": spread <= threshold,
     }
+
+
+def evaluate_seed_lock(*, equity: float | None = None) -> dict[str, Any]:
+    """
+    Block seed_signal when floating open risk >= cap (% of equity).
+    Default cap: 3% (floating_risk_cap_pct in desk config).
+    """
+    cfg = load_market_config()
+    state = refresh_risk_state(equity=equity)
+    cap = float(cfg.get("floating_risk_cap_pct", 3.0))
+    floating = float(state.get("floating_risk_pct", 0))
+    eq = float(state.get("last_equity") or equity or 0)
+
+    blocked = floating >= cap
+    detail = (
+        f"Open lot risk {floating:.2f}% >= {cap:.1f}% equity cap"
+        if blocked
+        else f"Open lot risk {floating:.2f}% within {cap:.1f}% cap"
+    )
+    return {
+        "blocked": blocked,
+        "floating_risk_pct": floating,
+        "cap_pct": cap,
+        "equity": eq,
+        "detail": detail,
+        "lock_type": "FLOATING_LOT_EQUITY_LOCK",
+    }

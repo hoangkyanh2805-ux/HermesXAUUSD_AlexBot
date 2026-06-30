@@ -16,20 +16,30 @@ from src.lot_calculator import calculate_lot, is_recovery_request
 from src.market_context import get_market_context, write_market_context
 from src.multi_entry import split_entries
 from src.publish_gate import publish_signal
-from src.safety_locks import evaluate_safety_locks, refresh_risk_state
+from src.safety_locks import evaluate_safety_locks, evaluate_seed_lock, refresh_risk_state
 from src.seeding_engine import generate_seeding_dict
 from src.signal_gate import check_signal_dict
 from src.signal_registry import create_signal
 from src.spread_audit import record_spread
 from src.spread_guard import guard_or_block
+from src.spread_monitor import record_at_check, start_background_monitor
 from src.supabase_writer import write_pipeline_step
+from src.telegram_notify import send_safety_lock_alert
 from src.forward_test import check_forward_test_stale, start_forward_test
 from src.signal_replay import get_setup_status, promote_setup, replay_signals
 from src.volume_tracker import record_volume
 
+_monitor_started = False
 _gate_cache: dict[str, dict] = {}
 _lot_cache: dict[str, dict] = {}
 _seeding_cache: dict[str, dict] = {}
+
+
+def _ensure_spread_monitor() -> None:
+    global _monitor_started
+    if not _monitor_started:
+        start_background_monitor(interval_sec=60)
+        _monitor_started = True
 
 
 def clear_pipeline_caches() -> None:
@@ -65,7 +75,7 @@ def _log_signal_audit(signal_id: str, result: dict) -> None:
         }
     )
     save_json(data_path("signal_audit.json"), audit)
-    log_gate_decision(signal_id, result)
+    log_gate_decision(signal_id, result, correlation_data=result.get("correlation_data"))
 
 
 def _apply_safety_to_gate(result: dict, safety: dict) -> dict:
@@ -183,6 +193,7 @@ def _cmd_split_entries(args: list[str]) -> dict[str, Any]:
 def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
     if not args:
         return {"ok": False, "error": "Usage: /check_signal <signal_id>"}
+    _ensure_spread_monitor()
     signal_id = args[0]
     signal = _load_signal(signal_id)
     if not signal:
@@ -194,6 +205,13 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
         xauusd_price=signal.get("xauusd_price"),
     )
     write_market_context(ctx)
+
+    spread_pts = float(ctx.get("spread_pts", 28.0))
+    monitor = record_at_check(
+        signal_id=signal_id,
+        spread_pts=spread_pts,
+        session=ctx.get("session", ""),
+    )
 
     result = check_signal_dict(signal, market_ctx=ctx)
     safety = evaluate_safety_locks(
@@ -220,8 +238,10 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
         signal_direction=signal.get("direction", ""),
         gate_result=result,
         market_ctx=ctx,
+        market_conditions=result.get("market_conditions"),
     )
     result["correlation_data"] = correlation_data
+    result["spread_monitor"] = monitor
 
     data = load_json(data_path("signals.json"), {"signals": []})
     for s in data.get("signals", []):
@@ -234,7 +254,6 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
 
     _gate_cache[signal_id] = result
     _log_signal_audit(signal_id, result)
-    log_gate_decision(signal_id, result, correlation_data=correlation_data)
     write_pipeline_step("checked", signal_id)
     return {"ok": True, "data": result}
 
@@ -324,6 +343,7 @@ def _cmd_calc_lot(args: list[str]) -> dict[str, Any]:
         safety_blocked=safety.get("block_new_trades", False),
     )
     _lot_cache[signal_id] = lot
+    lot["account_equity"] = equity
 
     state = refresh_risk_state(equity=equity)
     if lot.get("allowed") and lot.get("suggested_lot"):
@@ -357,6 +377,31 @@ def _cmd_seed_signal(args: list[str]) -> dict[str, Any]:
 
     ctx = load_json(data_path("market_context.json"), {})
     spread_pts = float(ctx.get("spread_pts", 0))
+
+    equity = float(_lot_cache.get(signal_id, {}).get("account_equity") or 0)
+    if equity <= 0:
+        equity = float(refresh_risk_state().get("last_equity") or 0)
+    seed_lock = evaluate_seed_lock(equity=equity if equity > 0 else None)
+    if seed_lock.get("blocked"):
+        log_event(
+            "SAFETY_LOCK_BLOCKED",
+            signal_id=signal_id,
+            event_note=seed_lock.get("detail", "seed blocked"),
+            status_after="BLOCK_SEED",
+            payload=seed_lock,
+        )
+        send_safety_lock_alert(
+            seed_lock.get("detail", "Floating risk cap exceeded"),
+            floating_risk_pct=float(seed_lock.get("floating_risk_pct", 0)),
+            cap_pct=float(seed_lock.get("cap_pct", 3)),
+        )
+        write_pipeline_step("seed_blocked", signal_id)
+        return {
+            "ok": False,
+            "error": f"Safety lock — seeding blocked: {seed_lock.get('detail')}",
+            "data": seed_lock,
+        }
+
     guard = guard_or_block(spread_pts, action="seed", signal_id=signal_id)
     if not guard.get("ok"):
         return {"ok": False, "error": f"Spread guard — seeding blocked ({guard.get('action')})."}

@@ -111,7 +111,7 @@ def build_step_payloads(signal_id: str, step: str) -> dict[str, Any]:
 
     activity = _activity_rows_for_signal(signal_id)
     if activity:
-        payloads["activity_logs"] = activity[-3:]
+        payloads["activity_logs"] = activity
 
     spread = _spread_row(signal_id)
     if spread:

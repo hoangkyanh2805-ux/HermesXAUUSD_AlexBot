@@ -380,6 +380,18 @@ def sync_all(*, dry_run: bool = False) -> dict[str, Any]:
                 on_conflict=conflict,
                 insert_only=insert_only,
             )
+        if result.get("error") and table == "activity_logs" and "SPREAD_MONITOR" in result.get("detail", ""):
+            filtered = [r for r in rows if r.get("event_type") not in ("SPREAD_MONITOR", "SAFETY_LOCK_BLOCKED")]
+            if filtered != rows:
+                result = _postgrest_upsert(
+                    base_url=cfg["url"],
+                    service_key=cfg["service_key"],
+                    table=table,
+                    rows=filtered,
+                    on_conflict=conflict,
+                    insert_only=insert_only,
+                )
+                result["warning"] = "Run 003_phase_h.sql for SPREAD_MONITOR / SAFETY_LOCK_BLOCKED"
         if result.get("error") and table == "activity_logs" and "CORRELATION_RISK" in result.get("detail", ""):
             filtered = [r for r in rows if r.get("event_type") != "CORRELATION_RISK"]
             if filtered:

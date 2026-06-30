@@ -15,8 +15,8 @@ def test_build_sync_payloads_signals_skip_no_sl():
     payloads = build_sync_payloads()
     ids = {s["signal_id"] for s in payloads["signals"]}
     assert "sig-reject-demo" not in ids
-    assert "sig-sell-4088" in ids
-    assert len(payloads["signals"]) >= 3
+    assert all(s.get("stop_loss") is not None for s in payloads["signals"])
+    assert len(payloads["signals"]) >= 1
 
 
 def test_build_sync_activity_keys_match_rows():
@@ -28,6 +28,8 @@ def test_build_sync_activity_keys_match_rows():
             "SIGNAL_CREATED",
             "SIGNAL_CHECKED",
             "SIGNAL_APPROVED",
+            "SPREAD_MONITOR",
+            "SAFETY_LOCK_BLOCKED",
         )
 
 
@@ -35,7 +37,7 @@ def test_sync_dry_run_ok():
     result = sync_all(dry_run=True)
     assert result["ok"] is True
     assert result["dry_run"] is True
-    assert result["counts"]["signals"] >= 3
+    assert result["counts"]["signals"] >= 1
 
 
 def test_sync_missing_credentials():

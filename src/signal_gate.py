@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.market_conditions import validate_market_conditions
+
 MIN_RR = 1.5
 VALID_DECISIONS = ("APPROVE", "WAIT", "REJECT", "REDUCE_RISK")
 
@@ -51,55 +53,19 @@ def _correlation_severity(
     dxy_direction: str,
     us10y_direction: str,
 ) -> tuple[str, str, list[str]]:
-    """Return tag, action, reasons for DXY/US10Y vs XAUUSD direction."""
-    d = direction.lower()
-    dxy = dxy_direction.lower()
-    us10y = us10y_direction.lower()
-    reasons: list[str] = []
-
-    if dxy == "neutral" and us10y == "neutral":
-        return "none", "APPROVE", reasons
-
-    def _usd_pressure() -> str:
-        if dxy == "bullish" or us10y == "bullish":
-            if dxy == "bullish" and us10y == "bullish":
-                return "high"
-            if dxy == "bullish" or us10y == "bullish":
-                return "medium"
-        if dxy == "bearish" or us10y == "bearish":
-            if dxy == "bearish" and us10y == "bearish":
-                return "low_aligned"
-            return "low_aligned"
-        return "none"
-
-    pressure = _usd_pressure()
-
-    if d == "buy":
-        if dxy == "bullish":
-            reasons.append("DXY bullish conflicts with XAUUSD BUY")
-        if us10y == "bullish":
-            reasons.append("US10Y bullish conflicts with XAUUSD BUY")
-        if pressure == "high":
-            return "high", "WAIT", reasons
-        if pressure == "medium" or reasons:
-            return "medium", "REDUCE_RISK", reasons
-        if pressure == "low_aligned":
-            reasons.append("DXY/US10Y bearish — tailwind for gold BUY")
-            return "aligned", "APPROVE", reasons
-    else:
-        if dxy == "bearish":
-            reasons.append("DXY bearish conflicts with XAUUSD SELL")
-        if us10y == "bearish":
-            reasons.append("US10Y bearish conflicts with XAUUSD SELL")
-        if pressure == "high" or (dxy == "bearish" and us10y == "bearish"):
-            return "high", "WAIT", reasons
-        if reasons:
-            return "medium", "REDUCE_RISK", reasons
-        if dxy == "bullish" or us10y == "bullish":
-            reasons.append("DXY/US10Y bullish — tailwind for gold SELL")
-            return "aligned", "APPROVE", reasons
-
-    return "none", "APPROVE", reasons
+    """Return tag, action, reasons — uses validate_market_conditions scoring."""
+    mc = validate_market_conditions(
+        direction=direction,
+        dxy_direction=dxy_direction,
+        us10y_direction=us10y_direction,
+    )
+    reasons: list[str] = list(mc.get("warnings", []))
+    reasons.extend(mc.get("notes", []))
+    tag = mc.get("correlation_risk_tag", "none")
+    action = mc.get("decision_hint", "APPROVE")
+    if tag == "aligned":
+        tag = "aligned"
+    return tag, action, reasons
 
 
 def check_signal(
@@ -189,6 +155,11 @@ def check_signal(
 def check_signal_dict(signal: dict[str, Any], market_ctx: dict[str, Any] | None = None) -> dict[str, Any]:
     """Check a signal record from data/signals.json."""
     ctx = market_ctx or {}
+    mc = validate_market_conditions(
+        direction=signal.get("direction", ""),
+        dxy_direction=ctx.get("dxy_direction", signal.get("dxy_direction", "neutral")),
+        us10y_direction=ctx.get("us10y_direction", signal.get("us10y_direction", "neutral")),
+    )
     result = check_signal(
         pair=signal.get("pair", "XAUUSD"),
         direction=signal.get("direction", ""),
@@ -203,6 +174,8 @@ def check_signal_dict(signal: dict[str, Any], market_ctx: dict[str, Any] | None 
         us10y_direction=ctx.get("us10y_direction", signal.get("us10y_direction", "neutral")),
     )
     result["signal_id"] = signal.get("signal_id")
+    result["market_conditions"] = mc
+    result["condition_score"] = mc.get("score")
     return result
 
 
