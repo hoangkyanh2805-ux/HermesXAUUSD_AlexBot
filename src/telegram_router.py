@@ -6,6 +6,7 @@ import shlex
 from typing import Any
 
 from src.ai_brain import print_brain, summarize
+from src.activity_log import log_event, log_gate_decision
 from src.common import data_path, load_json, save_json
 from src.dashboard import export_state, get_summary, print_dashboard
 from src.desk_config import load_market_config
@@ -19,6 +20,8 @@ from src.seeding_engine import generate_seeding_dict
 from src.signal_gate import check_signal_dict
 from src.signal_registry import create_signal
 from src.spread_audit import record_spread
+from src.spread_guard import guard_or_block
+from src.supabase_writer import write_pipeline_step
 from src.forward_test import check_forward_test_stale, start_forward_test
 from src.signal_replay import get_setup_status, promote_setup, replay_signals
 from src.volume_tracker import record_volume
@@ -49,9 +52,12 @@ def _log_signal_audit(signal_id: str, result: dict) -> None:
             "signal_id": signal_id,
             "decision": result.get("decision"),
             "correlation_risk_tag": result.get("correlation_risk_tag"),
+            "reasons": result.get("reasons", []),
+            "suggested_action": result.get("suggested_action"),
         }
     )
     save_json(data_path("signal_audit.json"), audit)
+    log_gate_decision(signal_id, result)
 
 
 def _apply_safety_to_gate(result: dict, safety: dict) -> dict:
@@ -212,6 +218,7 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
 
     _gate_cache[signal_id] = result
     _log_signal_audit(signal_id, result)
+    write_pipeline_step("checked", signal_id)
     return {"ok": True, "data": result}
 
 
@@ -309,6 +316,13 @@ def _cmd_calc_lot(args: list[str]) -> dict[str, Any]:
         )
         save_json(data_path("risk_state.json"), state)
 
+    log_event(
+        "LOT_CALCULATED",
+        signal_id=signal_id,
+        event_note=f"lot={lot.get('suggested_lot')}",
+        payload=lot,
+    )
+    write_pipeline_step("lot_calculated", signal_id)
     return {"ok": True, "data": lot}
 
 
@@ -325,8 +339,10 @@ def _cmd_seed_signal(args: list[str]) -> dict[str, Any]:
         return {"ok": False, "error": f"Signal not found: {signal_id}"}
 
     ctx = load_json(data_path("market_context.json"), {})
-    if not ctx.get("spread_ok", True):
-        return {"ok": False, "error": "Spread lock — seeding blocked."}
+    spread_pts = float(ctx.get("spread_pts", 0))
+    guard = guard_or_block(spread_pts, action="seed", signal_id=signal_id)
+    if not guard.get("ok"):
+        return {"ok": False, "error": f"Spread guard — seeding blocked ({guard.get('action')})."}
 
     lot = _lot_cache.get(signal_id, {})
     lot_cat = lot.get("suggested_lot_category")
@@ -346,6 +362,8 @@ def _cmd_seed_signal(args: list[str]) -> dict[str, Any]:
             s["spread_at_seed"] = spread_pts
     save_json(data_path("signals.json"), data)
 
+    log_event("SIGNAL_SEEDED", signal_id=signal_id, spread_value=spread_pts)
+    write_pipeline_step("seeded", signal_id)
     return {"ok": True, "data": messages}
 
 
@@ -353,9 +371,10 @@ def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
     if len(args) < 2:
         return {
             "ok": False,
-            "error": "Usage: /publish_signal <signal_id> <alex_yes|alex_no>",
+            "error": "Usage: /publish_signal <signal_id> <alex_yes|alex_no> [dry_run]",
         }
     signal_id, approval = args[0], args[1].lower()
+    dry_run = len(args) > 2 and args[2].lower() in ("dry_run", "dry-run", "dry")
     alex_ok = approval in ("yes", "y", "true", "1", "approve")
 
     gate = _gate_cache.get(signal_id)
@@ -363,8 +382,15 @@ def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
         return {"ok": False, "error": "Signal must be APPROVE or REDUCE_RISK before publish."}
 
     ctx = load_json(data_path("market_context.json"), {})
-    if not ctx.get("spread_ok", True):
-        return {"ok": False, "error": "Spread lock — publish blocked."}
+    spread_pts = float(ctx.get("spread_pts", 0))
+    guard = guard_or_block(
+        spread_pts,
+        action="publish",
+        signal_id=signal_id,
+        has_pending=True,
+    )
+    if not guard.get("ok"):
+        return {"ok": False, "error": f"Spread guard — publish blocked ({guard.get('action')})."}
 
     signal = _load_signal(signal_id)
     setup = (signal or {}).get("setup_name", "")
@@ -384,24 +410,33 @@ def _cmd_publish_signal(args: list[str]) -> dict[str, Any]:
         signal_id=signal_id,
         messages=messages,
         alex_approved=alex_ok,
+        dry_run=dry_run,
     )
     if not result.get("ok"):
         return result
 
-    spread_pts = float(ctx.get("spread_pts", 0))
-    record_spread(signal_id=signal_id, event="entry", spread_pts=spread_pts, session=ctx.get("session", ""))
+    if not dry_run:
+        spread_pts = float(ctx.get("spread_pts", 0))
+        record_spread(signal_id=signal_id, event="entry", spread_pts=spread_pts, session=ctx.get("session", ""))
 
-    data = load_json(data_path("signals.json"), {"signals": []})
-    for s in data.get("signals", []):
-        if s.get("signal_id") == signal_id:
-            s["status"] = "live"
-            s["spread_at_entry"] = spread_pts
-    save_json(data_path("signals.json"), data)
+        data = load_json(data_path("signals.json"), {"signals": []})
+        for s in data.get("signals", []):
+            if s.get("signal_id") == signal_id:
+                s["status"] = "live"
+                s["spread_at_entry"] = spread_pts
+        save_json(data_path("signals.json"), data)
 
-    state = load_json(data_path("risk_state.json"), {})
-    state["trades_today"] = int(state.get("trades_today", 0)) + 1
-    save_json(data_path("risk_state.json"), state)
+        state = load_json(data_path("risk_state.json"), {})
+        state["trades_today"] = int(state.get("trades_today", 0)) + 1
+        save_json(data_path("risk_state.json"), state)
 
+    log_event(
+        "SIGNAL_PUBLISHED",
+        signal_id=signal_id,
+        event_note="dry_run" if dry_run else "published",
+        spread_value=spread_pts,
+    )
+    write_pipeline_step("published", signal_id, dry_run=dry_run)
     export_state()
     return result
 
@@ -474,6 +509,10 @@ def _cmd_close_signal(args: list[str]) -> dict[str, Any]:
     )
     if not row.get("ok"):
         return {"ok": False, "error": row.get("error")}
+
+    log_event("TRADE_CLOSED", signal_id=signal_id, payload={"result": result, "pnl": float(pnl_s)})
+    log_event("JOURNAL_UPDATED", signal_id=signal_id, event_note=lesson[:120] if lesson else "")
+    write_pipeline_step("closed", signal_id)
 
     if lots > 0:
         record_volume(lots=lots)

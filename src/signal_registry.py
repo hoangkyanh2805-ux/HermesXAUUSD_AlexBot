@@ -6,6 +6,8 @@ from typing import Any
 
 from src.common import data_path, load_json, save_json
 from src.dashboard import export_state
+from src.activity_log import log_event
+from src.supabase_writer import write_pipeline_step
 
 
 def create_signal(
@@ -58,5 +60,7 @@ def create_signal(
     }
     data.setdefault("signals", []).append(row)
     save_json(data_path("signals.json"), data)
+    log_event("SIGNAL_CREATED", signal_id=signal_id, event_note=f"pair={pair} direction={direction}")
+    write_pipeline_step("created", signal_id)
     export_state()
     return {"ok": True, "data": row}

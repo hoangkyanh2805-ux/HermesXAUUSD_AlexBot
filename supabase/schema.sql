@@ -26,7 +26,10 @@ create table if not exists signals (
   status text not null default 'draft',
   decision text,
   reason text,
-  suggested_action text
+  suggested_action text,
+  dxy_context jsonb,
+  us10y_context jsonb,
+  spread_log jsonb
 );
 
 create table if not exists trades (
@@ -58,7 +61,8 @@ create table if not exists activity_logs (
   signal_id text,
   trade_id uuid references trades(id),
   event_type text not null check (event_type in (
-    'SIGNAL_SEEDED', 'SIGNAL_APPROVED', 'SIGNAL_WAITING', 'SIGNAL_REJECTED',
+    'SIGNAL_CREATED', 'SIGNAL_CHECKED', 'SIGNAL_SEEDED', 'SIGNAL_PUBLISHED',
+    'LOT_CALCULATED', 'SIGNAL_APPROVED', 'SIGNAL_WAITING', 'SIGNAL_REJECTED',
     'ENTRY_TRIGGERED', 'SPREAD_WARNING', 'PENDING_CANCELLED',
     'TP1_HIT', 'TP2_HIT', 'SL_HIT', 'TRADE_CLOSED', 'JOURNAL_UPDATED'
   )),
@@ -66,7 +70,8 @@ create table if not exists activity_logs (
   spread_value numeric,
   price numeric,
   status_before text,
-  status_after text
+  status_after text,
+  payload jsonb
 );
 
 create table if not exists risk_audit (

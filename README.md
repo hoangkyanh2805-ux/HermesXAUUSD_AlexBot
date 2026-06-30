@@ -20,6 +20,7 @@ Agent-operated IB signal desk for XAUUSD / Gold.
 
 - [Hermes XAUUSD Agent](agents/hermes-xauusd-agent.md)
 - Cursor rules: `.cursor/rules/hermes-xauusd-desk.mdc`
+- Cursor skill: `$progress-sync-updater` → [.cursor/skills/progress-sync-updater](.cursor/skills/progress-sync-updater/SKILL.md) (verify progress claims → update [progress-report](docs/progress-report.md))
 
 ## Agent OS
 
@@ -31,7 +32,7 @@ Agent-operated IB signal desk for XAUUSD / Gold.
 ## Status
 
 **Phase D complete** — Risk-First Volume Desk (correlation filter, safety locks, lot formula, spread audit, volume KPI).  
-**Phase E complete** — Sync `data/*.json` → Supabase + [Metabase setup](docs/supabase-metabase-setup.md).  
+**Phase E** — Batch sync `data/*.json` → Supabase ([setup](docs/supabase-metabase-setup.md); **prod-ready direct writes: pending** — see [progress-report](docs/progress-report.md)).  
 **Phase 4–5** — [SOP OPS](knowledge/ops/supabase-metabase-reporting-sop.vi.md) · [Connect Metabase](docs/metabase-phase4-connect.md) · [BI cards](docs/metabase-phase5-dashboard.md) · [Task checklist](workbook/ops/supabase-metabase-task.md)  
 **Phase 6 optional** — Vercel only if custom portal needed ([roadmap](docs/reporting-roadmap.md)).
 

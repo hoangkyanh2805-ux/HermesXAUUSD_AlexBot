@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.activity_log import rows_for_sync
 from src.common import REPO_ROOT, data_path, load_json, save_json
 from src.desk_config import load_market_config
 from src.journal import list_entries
@@ -56,6 +57,8 @@ def _signal_row(signal: dict[str, Any], audit_by_id: dict[str, dict]) -> dict[st
     if signal.get("stop_loss") is None:
         return None
     aid = audit_by_id.get(signal.get("signal_id", ""), {})
+    ctx = load_json(data_path("market_context.json"), {})
+    reasons = aid.get("reasons") or []
     return {
         "signal_id": signal["signal_id"],
         "pair": signal.get("pair", "XAUUSD"),
@@ -69,10 +72,19 @@ def _signal_row(signal: dict[str, Any], audit_by_id: dict[str, dict]) -> dict[st
         "news_risk": signal.get("news_risk"),
         "dxy_direction": signal.get("dxy_direction"),
         "us10y_direction": signal.get("us10y_direction"),
+        "dxy_context": ctx.get("dxy_context"),
+        "us10y_context": ctx.get("us10y_context"),
         "correlation_risk_tag": signal.get("correlation_risk_tag"),
+        "spread_log": [
+            {"event": e.get("event"), "spread_pts": e.get("spread_pts"), "ts": e.get("ts")}
+            for e in list_events()
+            if e.get("signal_id") == signal.get("signal_id")
+        ],
         "setup_name": signal.get("setup_name"),
         "status": signal.get("status", "draft"),
         "decision": aid.get("decision"),
+        "reason": "; ".join(reasons[:5]) if reasons else None,
+        "suggested_action": aid.get("suggested_action"),
     }
 
 
@@ -131,6 +143,18 @@ def _activity_rows(audit: dict[str, Any]) -> tuple[list[dict[str, Any]], list[st
     rows: list[dict[str, Any]] = []
     keys: list[str] = []
     seen = Counter()
+
+    pipeline_rows = rows_for_sync()
+    if pipeline_rows:
+        for row in pipeline_rows:
+            sid = row.get("signal_id", "")
+            et = row.get("event_type", "")
+            seen[(sid, et)] += 1
+            sync_key = f"{sid}:{et}:{seen[(sid, et)]}"
+            keys.append(sync_key)
+            rows.append(row)
+        return rows, keys
+
     for item in audit.get("decisions", []):
         decision = item.get("decision", "")
         event = _DECISION_TO_EVENT.get(decision)

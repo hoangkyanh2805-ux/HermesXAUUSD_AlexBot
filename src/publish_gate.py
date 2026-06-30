@@ -14,6 +14,7 @@ def publish_signal(
     messages: dict[str, str],
     alex_approved: bool,
     approver: str = "alex",
+    dry_run: bool = False,
 ) -> dict[str, Any]:
     """
     Simulate publish to Signal Group.
@@ -23,6 +24,19 @@ def publish_signal(
         return {
             "ok": False,
             "error": "G6: Can publish only after Alex approval (alex_approved=True).",
+        }
+
+    if dry_run:
+        return {
+            "ok": True,
+            "data": {
+                "signal_id": signal_id,
+                "published": False,
+                "dry_run": True,
+                "simulated": True,
+                "messages": messages,
+                "note": "Dry run — publish_log.json not updated.",
+            },
         }
 
     log = load_json(data_path("publish_log.json"), {"publishes": []})

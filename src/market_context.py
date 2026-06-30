@@ -37,6 +37,7 @@ def get_market_context(
 
     ctx = {
         "symbol": "XAUUSD",
+        "source": "mock",
         "session": session_from_utc(ts),
         "spread_pts": spread,
         "spread_threshold": threshold,
@@ -46,6 +47,8 @@ def get_market_context(
         "xauusd_price": xauusd_price,
         "dxy_direction": dxy_direction.lower(),
         "us10y_direction": us10y_direction.lower(),
+        "dxy_context": {"direction": dxy_direction.lower(), "source": "mock"},
+        "us10y_context": {"direction": us10y_direction.lower(), "source": "mock"},
         "ts": ts.isoformat(),
     }
     return ctx
