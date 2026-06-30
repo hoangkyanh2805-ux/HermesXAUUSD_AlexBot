@@ -129,6 +129,7 @@ Quy tắc seeding: `telegram/seeding-guidelines.md`, `telegram/signal-format.md`
 | Metabase cards | `metabase/cards.sql` |
 | Cursor agent rules | `.cursor/rules/hermes-xauusd-desk.mdc` |
 | Tiến độ / phase | `docs/progress-report.md` |
+| Journal + Brain + MT5 reconcile | `docs/journal-brain-execution-plan.md` |
 
 ---
 

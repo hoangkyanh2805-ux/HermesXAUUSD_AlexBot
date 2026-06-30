@@ -34,6 +34,7 @@
 | 4 Metabase connect | ✅ |
 | 5 Metabase cards | ✅ automated import |
 | 6 Vercel | ⏸ deferred |
+| **3 Journal + Brain reconcile** | 📋 planned — [journal-brain-execution-plan.md](journal-brain-execution-plan.md) |
 
 ---
 

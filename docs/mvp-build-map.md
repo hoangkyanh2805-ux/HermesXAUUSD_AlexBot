@@ -2,7 +2,7 @@
 
 ## Binding Constraint
 
-No end-to-end signal pipeline exists yet. Value is blocked until one sample XAUUSD signal can flow through all 9 steps with replay gate, human-approved publish, dashboard visibility, and brain update.
+Core pipeline (check → lot → seed → publish) is **implemented**. Remaining gap for Phase 3 close loop: **journal plan vs MT5 actual** + **G8 brain file writers** — see [journal-brain-execution-plan.md](./journal-brain-execution-plan.md).
 
 ## Delete / Defer
 
@@ -10,6 +10,7 @@ No end-to-end signal pipeline exists yet. Value is blocked until one sample XAUU
 |------|----------|--------|
 | Alex IB Jarvis Vision | **Defer Phase 2+** | Capstone; needs brain + dashboard first |
 | Broker execution API | **Delete from MVP** | Out of scope; reputation + security risk |
+| MT5 deal import (read-only) | **Defer Phase I** | See [journal-brain-execution-plan.md](./journal-brain-execution-plan.md) |
 | Client password handling | **Delete permanently** | Security boundary |
 | CRM | **Defer** | Telegram + client-groups.yaml sufficient |
 | Content Engine / X Funnel / BioLink | **Delete** | Not IB desk |
@@ -96,20 +97,30 @@ No end-to-end signal pipeline exists yet. Value is blocked until one sample XAUU
 
 ## Phase 3 — Learn + Close Loop (Journal + Brain)
 
-**Goal:** Closed signal updates journal, brain, and dashboard stats.
+**Goal:** Closed signal updates journal, brain, and dashboard stats — with **plan vs actual** reconcile (MT5 ngoài repo; operator hoặc import read-only).
 
-**Deliverables:**
-- `append_journal` MCP tool
-- `update_brain` MCP tool
-- `knowledge/brain/outcomes.jsonl` + `pairings.md` writers
-- End-to-end demo script
+**Plan chi tiết:** [journal-brain-execution-plan.md](./journal-brain-execution-plan.md)
+
+| Sub-phase | Focus | Status |
+|-----------|-------|--------|
+| **3A** | Manual reconcile + `update_brain` + outcomes/pairings | 📋 Planned |
+| **3B** | E2E demo + docs/SOP | 📋 Planned |
+| **I** | MT5 export read-only (defer) | ⏸ Deferred |
+
+**Deliverables (hiện có / còn thiếu):**
+- [x] `append_journal` + MCP `close_signal`
+- [x] `summarize()` → `data/ai_brain.json`
+- [ ] `update_brain` MCP + `knowledge/brain/outcomes.jsonl` writer
+- [ ] `pairings.md` auto-update
+- [ ] Journal `planned_*` / `actual_*` (fill, lots, exit, `pnl_source`)
+- [ ] `run_sig_test_001` through close (automated 9-step)
 
 **Acceptance criteria:**
-- [ ] Closing sample signal appends journal entry
-- [ ] Brain receives outcome row + pairing note
-- [ ] Dashboard reflects closed signal W/L
-- [ ] **Full 9-step core use case completes once end-to-end**
-- [ ] Demo script documented in `docs/first-sprint.md`
+- [x] Closing sample signal appends journal entry (`append_journal`)
+- [ ] Brain receives outcome row + pairing note (G8 full)
+- [x] Dashboard reflects closed signal W/L
+- [ ] **Full 9-step core use case in automated test** (close + brain files)
+- [ ] Demo + close reconcile documented in SOP / first-sprint
 
 ---
 
@@ -139,8 +150,8 @@ No end-to-end signal pipeline exists yet. Value is blocked until one sample XAUU
 4. MCP: lot + seeding                        (Phase 1)
 5. Telegram publish + human gate             (Phase 2)
 6. Dashboard reader                          (Phase 2)
-7. Journal + brain writers                   (Phase 3)
-8. End-to-end demo                           (Phase 3)
+7. Journal + brain writers                   (Phase 3) → plan: journal-brain-execution-plan.md §3A
+8. End-to-end demo                           (Phase 3) → plan: journal-brain-execution-plan.md §3B
 ```
 
 ## Risks
@@ -161,5 +172,6 @@ All Phase 0–3 acceptance criteria checked. Specifically:
 1. One sample XAUUSD signal — 9 steps end-to-end
 2. Replay gate blocked a bad setup (demonstrated)
 3. Dashboard shows decision + journal + stats
-4. Brain has ≥1 outcome + ≥1 pairing
+4. Brain has ≥1 outcome + ≥1 pairing (`outcomes.jsonl` + `pairings.md` per plan 3A)
 5. Zero execution API, passwords, profit claims
+6. Journal distinguishes signal **plan** vs MT5 **actual** when operator provides actuals (plan 3A)
