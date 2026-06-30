@@ -67,6 +67,18 @@ Every closed signal must:
 - Full CRM
 - Sales automation bots
 
+## G10 — Volume Is Not Objective
+
+Dashboard may display volume KPI progress (e.g. 200 lots/month).
+
+**Prohibited:**
+- Increasing trade frequency to meet volume targets
+- Increasing lot size beyond client risk profile for volume
+- Using volume KPI as a signal approval or publish trigger
+- Cron or agent prompts optimized for commission volume
+
+Volume is a **business metric to monitor**, not a trading decision rule.
+
 ## Enforcement
 
 | Layer | Mechanism |

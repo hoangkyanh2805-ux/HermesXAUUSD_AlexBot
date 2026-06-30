@@ -1,0 +1,9 @@
+{
+  "last_equity": 10000,
+  "floating_risk_pct": 0.0,
+  "daily_drawdown_pct": 0.0,
+  "open_trades": 1,
+  "trades_today": 0,
+  "last_reset_date": "2026-06-30",
+  "signals_blocked_spread": 0
+}

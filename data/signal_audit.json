@@ -1,0 +1,19 @@
+{
+  "decisions": [
+    {
+      "signal_id": "sig-reject-demo",
+      "decision": "WAIT",
+      "correlation_risk_tag": null
+    },
+    {
+      "signal_id": "sig-reject-demo",
+      "decision": "WAIT",
+      "correlation_risk_tag": null
+    },
+    {
+      "signal_id": "sig-reject-demo",
+      "decision": "WAIT",
+      "correlation_risk_tag": null
+    }
+  ]
+}

@@ -34,6 +34,10 @@ def append_journal(
     mistake: str = "",
     lesson: str = "",
     date: str | None = None,
+    lots: float = 0.0,
+    correlation_risk_tag: str | None = None,
+    spread_at_close: float | None = None,
+    risk_percent_used: float | None = None,
 ) -> dict[str, Any]:
     """Append a closed signal to data/journal.json."""
     store = _journal()
@@ -53,9 +57,13 @@ def append_journal(
         "result": result.lower(),
         "session": session,
         "lot_category": lot_category,
+        "lots": lots,
         "pnl": pnl,
         "mistake": mistake,
         "lesson": lesson,
+        "correlation_risk_tag": correlation_risk_tag,
+        "spread_at_close": spread_at_close,
+        "risk_percent_used": risk_percent_used,
     }
     entries.append(entry_row)
     store["entries"] = entries

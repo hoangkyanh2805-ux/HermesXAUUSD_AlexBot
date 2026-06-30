@@ -49,6 +49,33 @@
         "sl_hit_update": "SL hit on sig-sell-4088. Losses are part of trading - do not increase size to recover. Review the journal note when posted.",
         "result_summary": "Closed sig-sell-4088 - see journal for full result. Desk tracks lessons to improve process, not to promise future wins."
       }
+    },
+    {
+      "signal_id": "x",
+      "ts": "2026-06-30T03:12:50.903853+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "a": "b"
+      }
+    },
+    {
+      "signal_id": "x",
+      "ts": "2026-06-30T03:16:58.022417+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "a": "b"
+      }
+    },
+    {
+      "signal_id": "x",
+      "ts": "2026-06-30T03:21:51.493003+00:00",
+      "approver": "alex",
+      "channel": "signal_group_simulated",
+      "messages": {
+        "a": "b"
+      }
     }
   ]
 }

@@ -2,5 +2,12 @@ symbol: XAUUSD
 sessions:
   london: { start_utc: "07:00", end_utc: "11:00" }
   ny: { start_utc: "13:00", end_utc: "17:00" }
-spread_threshold_pts: 35
+spread_threshold_pts: 30
+slippage_tolerance_pts: 5
+floating_risk_cap_pct: 3.0
+daily_drawdown_cap_pct: 3.0
+max_trades_per_day: 5
+volume_kpi_monthly_lots: 200
+xauusd_value_per_point_per_0_01_lot: 0.1
+correlation_reduce_risk_multiplier: 0.5
 volatility_levels: [low, normal, elevated, high]

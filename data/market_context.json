@@ -1,9 +1,13 @@
 {
   "symbol": "XAUUSD",
-  "session": "ny",
+  "session": "asia",
   "spread_pts": 28.0,
+  "spread_threshold": 30.0,
   "spread_ok": true,
   "volatility": "normal",
   "news_risk": "low",
-  "ts": "2026-06-29T16:17:14.598707+00:00"
+  "xauusd_price": null,
+  "dxy_direction": "neutral",
+  "us10y_direction": "neutral",
+  "ts": "2026-06-30T03:21:51.498004+00:00"
 }

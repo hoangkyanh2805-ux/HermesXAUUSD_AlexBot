@@ -6,8 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.common import data_path, save_json
-
-SPREAD_THRESHOLD = 35.0
+from src.desk_config import load_market_config
 
 
 def session_from_utc(ts: datetime) -> str:
@@ -26,18 +25,27 @@ def get_market_context(
     spread_pts: float | None = None,
     news_risk: str = "low",
     volatility: str = "normal",
+    xauusd_price: float | None = None,
+    dxy_direction: str = "neutral",
+    us10y_direction: str = "neutral",
     ts: datetime | None = None,
 ) -> dict[str, Any]:
     ts = ts or datetime.now(timezone.utc)
+    cfg = load_market_config()
+    threshold = float(cfg["spread_threshold_pts"])
     spread = spread_pts if spread_pts is not None else 28.0
 
     ctx = {
         "symbol": "XAUUSD",
         "session": session_from_utc(ts),
         "spread_pts": spread,
-        "spread_ok": spread <= SPREAD_THRESHOLD,
+        "spread_threshold": threshold,
+        "spread_ok": spread <= threshold,
         "volatility": volatility,
         "news_risk": news_risk,
+        "xauusd_price": xauusd_price,
+        "dxy_direction": dxy_direction.lower(),
+        "us10y_direction": us10y_direction.lower(),
         "ts": ts.isoformat(),
     }
     return ctx

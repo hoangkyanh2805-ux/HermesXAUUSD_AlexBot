@@ -29,14 +29,15 @@ Agent-operated IB signal desk for XAUUSD / Gold.
 
 ## Status
 
-**Phase C complete** — replay dataset + forward test + Hermes MCP (11 tools).
+**Phase D complete** — Risk-First Volume Desk (correlation filter, safety locks, lot formula, spread audit, volume KPI).  
+**Phase E complete** — Sync `data/*.json` → Supabase + [Metabase setup](docs/supabase-metabase-setup.md).
 
 ```bash
 python src/main.py              # Phase C demo (replay -> publish -> journal)
-python tests/run_tests.py       # 20 tests
+python tests/run_tests.py       # 31 tests
+python scripts/sync_to_supabase.py --dry-run
 pip install mcp
 ```
-
 **Hermes:** [docs/hermes-mcp-setup.md](docs/hermes-mcp-setup.md)  
 **Telegram bot (BotFather):** [docs/telegram-bot-setup.md](docs/telegram-bot-setup.md)
 

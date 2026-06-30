@@ -21,9 +21,9 @@ python mcp/xauusd-trading/server.py   # stdio — Ctrl+C to stop
 
 Example config: `hermes-mcp.example.json`
 
-## Tools (11)
+## Tools (14)
 
-`replay_signals` · `check_signal` · `calc_lot` · `seed_signal` · `publish_signal` · `close_signal` · `promote_setup` · `start_forward_test` · `forward_test_check` · `dashboard` · `brain`
+`create_signal` · `safety_check` · `split_entries` · `replay_signals` · `check_signal` · `calc_lot` · `seed_signal` · `publish_signal` · `close_signal` · `promote_setup` · `start_forward_test` · `forward_test_check` · `dashboard` · `brain`
 
 ## Replay data
 

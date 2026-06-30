@@ -1,19 +1,107 @@
 {
-  "updated_at": "2026-06-29T16:20:04.652007+00:00",
+  "updated_at": "2026-06-30T03:21:51.443004+00:00",
   "desk": "Hermes XAUUSD IB",
-  "total_signals": 3,
-  "open_signals": 2,
-  "closed_signals": 0,
-  "wins": 0,
+  "total_signals": 4,
+  "open_signals": 3,
+  "closed_signals": 1,
+  "wins": 1,
   "losses": 0,
   "breakeven": 0,
-  "total_pnl": 0,
-  "lot_category_summary": {},
-  "latest_lessons": [],
+  "total_pnl": 50.0,
+  "lot_category_summary": {
+    "small": 1
+  },
+  "latest_lessons": [
+    "one entry"
+  ],
   "open_signal_ids": [
     "sig-reject-demo",
-    "sig-sell-4088"
+    "sig-sell-4088",
+    "t-phase-d-create"
   ],
-  "last_closed": null,
-  "journal_entries": []
+  "last_closed": {
+    "signal_id": "t-b1",
+    "date": "2026-06-30",
+    "pair": "XAUUSD",
+    "direction": "buy",
+    "entry": 2345.0,
+    "stop_loss": 2340.0,
+    "take_profits": [
+      2355.0
+    ],
+    "result": "win",
+    "session": "london",
+    "lot_category": "small",
+    "lots": 0.0,
+    "pnl": 50.0,
+    "mistake": "",
+    "lesson": "one entry",
+    "correlation_risk_tag": null,
+    "spread_at_close": null,
+    "risk_percent_used": null
+  },
+  "journal_entries": [
+    {
+      "signal_id": "t-b1",
+      "date": "2026-06-30",
+      "pair": "XAUUSD",
+      "direction": "buy",
+      "entry": 2345.0,
+      "stop_loss": 2340.0,
+      "take_profits": [
+        2355.0
+      ],
+      "result": "win",
+      "session": "london",
+      "lot_category": "small",
+      "lots": 0.0,
+      "pnl": 50.0,
+      "mistake": "",
+      "lesson": "one entry",
+      "correlation_risk_tag": null,
+      "spread_at_close": null,
+      "risk_percent_used": null
+    }
+  ],
+  "risk_metrics": {
+    "equity": 10000,
+    "floating_risk_pct": 0.0,
+    "daily_drawdown_pct": 0.0,
+    "open_trades": 1,
+    "trades_today": 0,
+    "signals_approved": 0,
+    "signals_rejected": 0,
+    "signals_waiting": 2
+  },
+  "volume_metrics": {
+    "daily_lots": 0.5,
+    "weekly_lots": 0.5,
+    "monthly_lots": 0.5,
+    "kpi_target_monthly_lots": 200.0,
+    "kpi_progress": 0.003,
+    "kpi_progress_percent": 0.3,
+    "kpi_display_only": true,
+    "total_all_time": 0.5,
+    "remaining_to_kpi": 199.5,
+    "trading_days_passed": 22,
+    "trading_days_remaining": 0,
+    "required_daily_pace": 0.0,
+    "actual_daily_pace": 0.02,
+    "projected_month_end_lots": 0.44,
+    "avg_lot_per_signal": 0.0,
+    "signals_needed_at_avg_lot": null,
+    "kpi_note": "Display only — does not trigger trades."
+  },
+  "spread_audit": {
+    "count": 2,
+    "avg_entry_spread": 28.0,
+    "avg_close_spread": 30.0,
+    "max_spread": 30.0,
+    "spread_warning_count": 0,
+    "blocked_spread_count": 0
+  },
+  "audit_warnings": [],
+  "signal_quality": {
+    "high_correlation_outcomes": 0
+  }
 }

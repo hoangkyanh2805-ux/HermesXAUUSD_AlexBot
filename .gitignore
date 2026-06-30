@@ -1,6 +1,7 @@
 # Secrets — never commit
 .env
 telegram/.env
+supabase/.env
 *.env.local
 
 # Python

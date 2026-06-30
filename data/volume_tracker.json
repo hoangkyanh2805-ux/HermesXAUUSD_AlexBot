@@ -1,0 +1,13 @@
+{
+  "daily": {
+    "2026-06-30": 0.5
+  },
+  "weekly": {
+    "2026-W27": 0.5
+  },
+  "monthly": {
+    "2026-06": 0.5
+  },
+  "kpi_target_monthly_lots": 200,
+  "total_all_time": 0.5
+}

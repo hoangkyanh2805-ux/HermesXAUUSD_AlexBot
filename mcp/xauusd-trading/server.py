@@ -25,8 +25,13 @@ except ImportError:
     raise SystemExit(1)
 
 from src.forward_test import check_forward_test_stale, start_forward_test
+from src.multi_entry import split_entries
+from src.safety_locks import evaluate_safety_locks
+from src.signal_registry import create_signal
 from src.signal_replay import replay_signals
+from src.supabase_sync import sync_all
 from src.telegram_router import route_command
+from src.market_context import get_market_context
 
 server = Server("xauusd-trading")
 
@@ -41,8 +46,30 @@ TOOLS = [
         },
     ),
     Tool(
+        name="create_signal",
+        description="Register new XAUUSD signal in desk. Required: signal_id, direction, entry_low, entry_high, stop_loss, take_profits",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "signal_id": {"type": "string"},
+                "direction": {"type": "string"},
+                "entry_low": {"type": "number"},
+                "entry_high": {"type": "number"},
+                "stop_loss": {"type": "number"},
+                "take_profits": {"type": "array", "items": {"type": "number"}},
+                "setup_name": {"type": "string"},
+                "session": {"type": "string"},
+                "news_risk": {"type": "string"},
+                "market_bias": {"type": "string"},
+                "dxy_direction": {"type": "string"},
+                "us10y_direction": {"type": "string"},
+            },
+            "required": ["signal_id", "direction", "entry_low", "entry_high", "stop_loss", "take_profits"],
+        },
+    ),
+    Tool(
         name="check_signal",
-        description="Market + Signal Room validate. Args: signal_id",
+        description="Market + Signal Room validate with correlation filter. Args: signal_id",
         inputSchema={
             "type": "object",
             "properties": {"signal_id": {"type": "string"}},
@@ -50,8 +77,16 @@ TOOLS = [
         },
     ),
     Tool(
+        name="safety_check",
+        description="Evaluate safety locks (spread, floating risk, daily DD). Optional equity",
+        inputSchema={
+            "type": "object",
+            "properties": {"equity": {"type": "number"}},
+        },
+    ),
+    Tool(
         name="calc_lot",
-        description="Lot Room. Args: signal_id, equity, tier (conservative|standard|aggressive)",
+        description="Lot Room — equity-based lot sizing. Args: signal_id, equity, tier (conservative|standard|aggressive)",
         inputSchema={
             "type": "object",
             "properties": {
@@ -63,8 +98,30 @@ TOOLS = [
         },
     ),
     Tool(
+        name="split_entries",
+        description="Split multi-entry legs; total lot must match calc_lot. Args: signal_id, legs [{lot, entry}]",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "signal_id": {"type": "string"},
+                "legs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "lot": {"type": "number"},
+                            "entry": {"type": "number"},
+                        },
+                        "required": ["lot", "entry"],
+                    },
+                },
+            },
+            "required": ["signal_id", "legs"],
+        },
+    ),
+    Tool(
         name="seed_signal",
-        description="Seeding Room. Args: signal_id",
+        description="Seeding Room — logs spread at seed. Args: signal_id",
         inputSchema={
             "type": "object",
             "properties": {"signal_id": {"type": "string"}},
@@ -85,7 +142,7 @@ TOOLS = [
     ),
     Tool(
         name="close_signal",
-        description="Journal + Brain. Args: signal_id, result, pnl, lesson",
+        description="Journal + Brain + volume tracker. Args: signal_id, result, pnl, lesson",
         inputSchema={
             "type": "object",
             "properties": {
@@ -125,13 +182,21 @@ TOOLS = [
     ),
     Tool(
         name="dashboard",
-        description="IB Signal Dashboard summary",
+        description="IB Signal Dashboard — risk, volume KPI, spread audit",
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="brain",
-        description="XAUUSD AI Brain from journal only",
+        description="XAUUSD AI Brain from journal + spread + volume",
         inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="sync_supabase",
+        description="Sync local data/*.json to Supabase reporting tables. Args: dry_run (bool, default false)",
+        inputSchema={
+            "type": "object",
+            "properties": {"dry_run": {"type": "boolean"}},
+        },
     ),
 ]
 
@@ -151,10 +216,52 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 
     if name == "replay_signals":
         text = _run(f"/replay {args['setup_name']}")
+    elif name == "create_signal":
+        tps = " ".join(str(x) for x in args["take_profits"])
+        setup = args.get("setup_name", "")
+        cmd = (
+            f"/create_signal {args['signal_id']} {args['direction']} "
+            f"{args['entry_low']} {args['entry_high']} {args['stop_loss']} {tps}"
+        )
+        if setup:
+            cmd += f" {setup}"
+        result = create_signal(
+            signal_id=args["signal_id"],
+            direction=args["direction"],
+            entry_low=float(args["entry_low"]),
+            entry_high=float(args["entry_high"]),
+            stop_loss=float(args["stop_loss"]),
+            take_profits=[float(x) for x in args["take_profits"]],
+            setup_name=setup,
+            session=args.get("session", "london"),
+            news_risk=args.get("news_risk", "low"),
+            market_bias=args.get("market_bias", "neutral"),
+            dxy_direction=args.get("dxy_direction", "neutral"),
+            us10y_direction=args.get("us10y_direction", "neutral"),
+        )
+        text = json.dumps(result, indent=2, ensure_ascii=False)
+    elif name == "safety_check":
+        ctx = get_market_context()
+        equity = args.get("equity")
+        result = evaluate_safety_locks(market_ctx=ctx, equity=equity)
+        text = json.dumps({"ok": True, "data": result}, indent=2, ensure_ascii=False)
     elif name == "check_signal":
         text = _run(f"/check_signal {args['signal_id']}")
     elif name == "calc_lot":
         text = _run(f"/calc_lot {args['signal_id']} {args['equity']} {args['tier']}")
+    elif name == "split_entries":
+        from src.telegram_router import _lot_cache
+
+        lot_info = _lot_cache.get(args["signal_id"])
+        if not lot_info:
+            text = json.dumps({"ok": False, "error": "Run calc_lot first."})
+        else:
+            result = split_entries(
+                total_lot=float(lot_info["suggested_lot"]),
+                risk_budget_usd=float(lot_info["suggested_risk_amount"]),
+                legs=args["legs"],
+            )
+            text = json.dumps(result, indent=2, ensure_ascii=False)
     elif name == "seed_signal":
         text = _run(f"/seed_signal {args['signal_id']}")
     elif name == "publish_signal":
@@ -175,6 +282,9 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         text = _run("/dashboard")
     elif name == "brain":
         text = _run("/brain")
+    elif name == "sync_supabase":
+        result = sync_all(dry_run=bool(args.get("dry_run")))
+        text = json.dumps(result, indent=2, ensure_ascii=False)
     else:
         text = json.dumps({"ok": False, "error": f"Unknown tool: {name}"})
 
