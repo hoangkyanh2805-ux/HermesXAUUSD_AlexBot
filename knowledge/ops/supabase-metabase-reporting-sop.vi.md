@@ -49,9 +49,9 @@ Desk local (JSON / pipeline)
 | Secret | Lấy ở đâu | Dùng cho | Không dùng cho |
 |--------|-----------|----------|----------------|
 | **Database password** | Connect → Reset password | Metabase, psql | Sync script, frontend |
-| **service_role** (`sb_secret_...`) | API Keys | `sync_to_supabase.py` | Form Metabase |
-| **publishable** | API Keys | Client RLS | Metabase, sync |
-| **SUPABASE_URL** | API | PostgREST sync | Host Metabase |
+| **service_role / Secret** (`sb_secret_...`) | **Settings → API Keys** (tab Secret) | `sync_to_supabase.py`, `supabase_writer` | Metabase, frontend |
+| **publishable** (`sb_publishable_...`) | **Settings → API Keys** (tab Publishable) | Client RLS | Metabase, sync |
+| **SUPABASE_URL** | **Integrations → Data API** hoặc General | PostgREST sync (`https://<ref>.supabase.co`) | Host Metabase |
 
 ### Metabase — Session pooler (IPv4, khuyên dùng)
 
@@ -162,6 +162,9 @@ select count(*) from signals;
 | Fail ngay | Host `db.*` IPv6 | Session pooler |
 | SSL error | verify-full | `require` |
 | Bảng trống | Chưa sync | `sync_to_supabase.py` |
+| HTTP 400 `PGRST102` All object keys must match | Batch insert thiếu cột đồng nhất | Đã fix `_normalize_batch` trong `supabase_sync.py` (2026-06) |
+| HTTP 401 | Sai secret key hoặc key đã rotate | Settings → API Keys → Secret → cập nhật `.env` |
+| DNS fail URL lạ | Sai project ref | Dùng ref từ Data API (`tikouskusgdygktslmzj`) |
 | JAR crash | Java 17 / path space | Java 21 + `C:\hermes-metabase` |
 | Không thấy Reset password | UI mới | Connect → Session pooler |
 
@@ -215,6 +218,9 @@ RÀNG BUỘC: G10. Không secrets trong git.
 3. Reset password ở **Connect**, không phải Settings → Database
 4. Metabase ≠ HTML dashboard local
 5. Connect OK ≠ có data — cần sync riêng
+6. **API Keys mới:** dùng `sb_secret_...` trong `.env` — **không** dùng `sb_publishable_...` cho sync
+7. **Không** lấy key từ **JWT Keys** — đó là signing key, không phải REST API key
+8. Live sync verified 2026-06: `signals=4`, `activity_logs=13`, `spread_audit=2` trên `tikouskusgdygktslmzj`
 
 ---
 

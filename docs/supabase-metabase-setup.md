@@ -52,8 +52,13 @@ SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
-Lấy từ: **Project Settings → API**  
-Dùng **service_role** (server only) — **không** commit, **không** đưa vào frontend.
+Lấy từ: **Settings → API Keys** → tab **Secret** (`sb_secret_...`)  
+**Không** dùng Publishable (`sb_publishable_...`) cho sync. **Không** dùng JWT Keys.
+
+```env
+SUPABASE_URL=https://tikouskusgdygktslmzj.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
+```
 
 ---
 
@@ -167,8 +172,9 @@ sync_supabase
 | Lỗi | Cách sửa |
 |-----|----------|
 | Missing SUPABASE_URL | Tạo `supabase/.env` |
-| HTTP 401 | Sai service_role key |
+| HTTP 401 | Sai secret key (`sb_secret_...`) — rotate và cập nhật `.env` |
 | HTTP 404 | Chưa chạy `schema.sql` |
+| HTTP 400 PGRST102 | Batch JSON keys không khớp | Đã fix `supabase_sync._normalize_batch` |
 | FK violation on trades | Sync `signals` trước (script đã đúng thứ tự) |
 | RLS blocked | Dùng service_role hoặc tắt RLS cho MVP |
 

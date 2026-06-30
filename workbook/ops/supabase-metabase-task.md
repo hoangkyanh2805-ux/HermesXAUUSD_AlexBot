@@ -7,49 +7,41 @@
 | Step | Task | Status |
 |------|------|--------|
 | E1 | Run `supabase/schema.sql` | ✅ |
-| E2 | Create `supabase/.env` | ⬜ operator |
-| E3 | `python scripts/sync_to_supabase.py` | ⬜ |
+| E2 | Create `supabase/.env` (`sb_secret_...`) | ✅ |
+| E3 | `python scripts/sync_to_supabase.py` | ✅ live (signals 4, activity 13) |
 | 4.1 | Start Metabase (`scripts/start_metabase.ps1`) | ✅ |
 | 4.2 | Connect Session pooler + SSL require | ✅ |
 | 4.3 | Browse tables + smoke SQL | ⬜ |
 | 5.1 | Create collection + dashboard | ⬜ |
 | 5.2 | Add 20 cards from `metabase/cards.sql` | ⬜ |
 | 6 | Vercel portal | ⏸ deferred |
-| **F1** | Direct Supabase writer + dry_run | ✅ |
-| **F2** | Router hooks per pipeline step | ✅ |
-| **F8** | `sig-test-001` runner + test | ✅ dry-run |
+| **F1–F8** | Phase F pipeline + sig-test-001 | ✅ |
+| **G** | Live DXY/US10Y + correlation_data | ⬜ next |
 
-## Phase F — next coding (from progress-report)
+## Credentials (confirmed)
 
-1. `src/supabase_writer.py` — per-step upsert / dry_run payload
-2. Wire `telegram_router.py` (check, lot, seed, publish)
-3. `src/activity_log.py` — full event types
-4. `supabase/migrations/001_*.sql` — dxy_context, us10y_context, activity types
-5. `src/spread_guard.py`
-6. `scripts/run_sig_test_001.py`
+```text
+project_ref: tikouskusgdygktslmzj
+supabase_url: https://tikouskusgdygktslmzj.supabase.co
+api_keys: Settings → API Keys (sb_secret for .env, NOT publishable)
+pooler_host: aws-1-ap-south-1.pooler.supabase.com
+db_user: postgres.tikouskusgdygktslmzj
+```
 
 ## Quick commands
 
 ```powershell
 python tests/run_tests.py
 python scripts/sync_to_supabase.py --dry-run
-powershell -ExecutionPolicy Bypass -File scripts\start_metabase.ps1
-```
-
-## Connection template
-
-```text
-project_ref: tikouskusgdygktslmzj
-pooler_host: aws-1-ap-south-1.pooler.supabase.com
-pooler_port: 5432
-db_user: postgres.tikouskusgdygktslmzj
-ssl_mode: require
+python scripts/sync_to_supabase.py
+python scripts/run_sig_test_001.py --live
 ```
 
 ## Exit criteria (production-ready Supabase)
 
-- [ ] Per-step direct write OR verified `run_sig_test_001` + Supabase rows
-- [ ] `sig-test-001` in `signals` + `activity_logs` + `spread_audit`
+- [x] Live batch sync `ok: true`
+- [x] `signals` ≥ 1 row in Supabase
+- [ ] Rotate secret if exposed in chat
+- [ ] `sig-test-001` rows via `--live`
 - [ ] Metabase `select count(*) from signals` ≥ 1
 - [ ] G10 footer on volume KPI cards
-- [ ] No secrets committed

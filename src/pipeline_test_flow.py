@@ -31,6 +31,21 @@ SIG_TEST_001 = {
 }
 
 
+def _reset_risk_state() -> None:
+    save_json(
+        data_path("risk_state.json"),
+        {
+            "last_equity": 0.0,
+            "floating_risk_pct": 0.0,
+            "daily_drawdown_pct": 0.0,
+            "open_trades": 0,
+            "trades_today": 0,
+            "last_reset_date": "",
+            "signals_blocked_spread": 0,
+        },
+    )
+
+
 def _remove_signal(signal_id: str) -> None:
     data = load_json(data_path("signals.json"), {"signals": []})
     data["signals"] = [s for s in data.get("signals", []) if s.get("signal_id") != signal_id]
@@ -62,6 +77,7 @@ def run_sig_test_001(*, dry_run: bool = True, reset: bool = True) -> dict[str, A
 
     if reset:
         _remove_signal(sid)
+        _reset_risk_state()
 
     ctx = get_market_context(
         spread_pts=25.0,

@@ -49,9 +49,9 @@ Local desk (JSON / pipeline)
 | Secret | Where to get | Used for | Never use for |
 |--------|--------------|----------|---------------|
 | **Database password** | Supabase → Connect → Reset password | Metabase PostgreSQL, `psql` | REST sync, frontend |
-| **service_role** (`sb_secret_...`) | Settings → API Keys | `sync_to_supabase.py`, server | Metabase DB form |
-| **publishable** (`sb_publishable_...`) | Settings → API Keys | Client apps (RLS) | Metabase, sync script |
-| **SUPABASE_URL** | Settings → API | PostgREST sync | Metabase host field |
+| **service_role / Secret** (`sb_secret_...`) | Settings → **API Keys** (Secret tab) | `sync_to_supabase.py`, server | Metabase DB form |
+| **publishable** (`sb_publishable_...`) | Settings → **API Keys** (Publishable) | Client apps (RLS) | Metabase, sync script |
+| **SUPABASE_URL** | Integrations → **Data API** or General | PostgREST sync | Metabase host field |
 
 ### Metabase connection fields (Session pooler — default for IPv4)
 
@@ -186,6 +186,8 @@ If `signals = 0` → run Workflow A3 sync.
 | SSL / certificate error | `verify-full` without PEM | SSL mode `require`, no cert file |
 | Connection refused / timeout | Direct `db.*` on IPv4 | Session pooler |
 | Tables empty in Metabase | No sync | `python scripts/sync_to_supabase.py` |
+| HTTP 400 `PGRST102` keys must match | Inconsistent JSON keys in batch upsert | Fixed via `_normalize_batch` in `supabase_sync.py` |
+| HTTP 401 on sync | Wrong or rotated secret key | Update `SUPABASE_SERVICE_ROLE_KEY` in `.env` |
 | Metabase JAR crash on Windows | Java 17 or path with spaces | Java 21 + `C:\hermes-metabase\` |
 | Can't find Database in Settings | Supabase UI changed | Connect → Session pooler → Reset password |
 

@@ -139,6 +139,17 @@ def _aggregate_spread_rows(events: list[dict[str, Any]]) -> list[dict[str, Any]]
     return list(by_signal.values())
 
 
+def _normalize_batch(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """PostgREST requires identical keys on every object in a batch."""
+    if not rows:
+        return rows
+    all_keys: set[str] = set()
+    for row in rows:
+        all_keys.update(row.keys())
+    key_list = sorted(all_keys)
+    return [{k: row.get(k) for k in key_list} for row in rows]
+
+
 def _activity_rows(audit: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
     rows: list[dict[str, Any]] = []
     keys: list[str] = []
@@ -251,6 +262,8 @@ def _postgrest_upsert(
 ) -> dict[str, Any]:
     if not rows:
         return {"table": table, "upserted": 0, "skipped": True}
+
+    rows = _normalize_batch(rows)
 
     url = f"{base_url}/rest/v1/{table}"
     if on_conflict:

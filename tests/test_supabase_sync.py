@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from src.supabase_sync import build_sync_payloads, get_supabase_config, sync_all
+from src.supabase_sync import _normalize_batch, build_sync_payloads, get_supabase_config, sync_all
+
+
+def test_normalize_batch_uniform_keys():
+    rows = [{"signal_id": "a", "event_type": "X"}, {"signal_id": "b", "payload": {}}]
+    norm = _normalize_batch(rows)
+    assert all(set(r.keys()) == {"event_type", "payload", "signal_id"} for r in norm)
 
 
 def test_build_sync_payloads_signals_skip_no_sl():
