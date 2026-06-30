@@ -61,6 +61,7 @@ def _signal_row(signal: dict[str, Any]) -> dict[str, Any]:
         "dxy_context": ctx.get("dxy_context") or {"direction": ctx.get("dxy_direction"), "source": ctx.get("source", "mock")},
         "us10y_context": ctx.get("us10y_context") or {"direction": ctx.get("us10y_direction"), "source": ctx.get("source", "mock")},
         "correlation_risk_tag": signal.get("correlation_risk_tag"),
+        "correlation_data": signal.get("correlation_data"),
         "spread_log": spread_log,
         "setup_name": signal.get("setup_name"),
         "status": signal.get("status", "draft"),

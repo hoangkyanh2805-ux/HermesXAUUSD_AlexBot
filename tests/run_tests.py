@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from tests import test_integration, test_lot_calculator, test_phase_d, test_seeding_engine, test_signal_gate, test_signal_replay, test_sig_test_001, test_supabase_sync
+from tests import test_integration, test_lot_calculator, test_market_data, test_phase_d, test_seeding_engine, test_signal_gate, test_signal_replay, test_sig_test_001, test_supabase_sync
 
 MODULES = [
     test_signal_gate,
@@ -14,6 +14,7 @@ MODULES = [
     test_seeding_engine,
     test_signal_replay,
     test_phase_d,
+    test_market_data,
     test_supabase_sync,
     test_sig_test_001,
     test_integration,

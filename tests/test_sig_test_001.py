@@ -32,6 +32,6 @@ def test_build_step_payloads_has_context_fields():
     assert "error" not in payloads
     row = payloads["signals"][0]
     assert row["signal_id"] == "sig-test-001"
-    assert row.get("dxy_context", {}).get("source") == "mock"
-    assert row.get("us10y_context", {}).get("source") == "mock"
+    assert row.get("dxy_context", {}).get("source") in ("mock", "yahoo_finance", "live")
+    assert row.get("us10y_context", {}).get("direction") in ("bullish", "bearish", "neutral")
     assert isinstance(row.get("spread_log"), list)

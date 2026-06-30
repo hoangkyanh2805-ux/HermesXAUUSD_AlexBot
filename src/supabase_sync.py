@@ -75,6 +75,7 @@ def _signal_row(signal: dict[str, Any], audit_by_id: dict[str, dict]) -> dict[st
         "dxy_context": ctx.get("dxy_context"),
         "us10y_context": ctx.get("us10y_context"),
         "correlation_risk_tag": signal.get("correlation_risk_tag"),
+        "correlation_data": signal.get("correlation_data") or aid.get("correlation_data"),
         "spread_log": [
             {"event": e.get("event"), "spread_pts": e.get("spread_pts"), "ts": e.get("ts")}
             for e in list_events()
@@ -290,7 +291,32 @@ def _postgrest_upsert(
             return {"table": table, "upserted": len(rows), "status": resp.status}
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")
-        return {"table": table, "upserted": 0, "error": f"HTTP {e.code}: {detail[:500]}"}
+        return {"table": table, "upserted": 0, "error": f"HTTP {e.code}: {detail[:500]}", "detail": detail}
+
+
+def _retry_without_columns(
+    *,
+    base_url: str,
+    service_key: str,
+    table: str,
+    rows: list[dict[str, Any]],
+    columns: tuple[str, ...],
+    on_conflict: str | None,
+    insert_only: bool,
+) -> dict[str, Any]:
+    stripped = [{k: v for k, v in row.items() if k not in columns} for row in rows]
+    result = _postgrest_upsert(
+        base_url=base_url,
+        service_key=service_key,
+        table=table,
+        rows=stripped,
+        on_conflict=on_conflict,
+        insert_only=insert_only,
+    )
+    if not result.get("error"):
+        result["stripped_columns"] = list(columns)
+        result["warning"] = f"Run supabase/migrations/002_phase_g.sql to enable {columns}"
+    return result
 
 
 def sync_all(*, dry_run: bool = False) -> dict[str, Any]:
@@ -344,9 +370,33 @@ def sync_all(*, dry_run: bool = False) -> dict[str, Any]:
             on_conflict=conflict,
             insert_only=insert_only,
         )
+        if result.get("error") and table == "signals" and "correlation_data" in result.get("detail", ""):
+            result = _retry_without_columns(
+                base_url=cfg["url"],
+                service_key=cfg["service_key"],
+                table=table,
+                rows=rows,
+                columns=("correlation_data",),
+                on_conflict=conflict,
+                insert_only=insert_only,
+            )
+        if result.get("error") and table == "activity_logs" and "CORRELATION_RISK" in result.get("detail", ""):
+            filtered = [r for r in rows if r.get("event_type") != "CORRELATION_RISK"]
+            if filtered:
+                result = _postgrest_upsert(
+                    base_url=cfg["url"],
+                    service_key=cfg["service_key"],
+                    table=table,
+                    rows=filtered,
+                    on_conflict=conflict,
+                    insert_only=insert_only,
+                )
+                result["warning"] = "Run 002_phase_g.sql for CORRELATION_RISK event type"
         summary["results"].append(result)
         if result.get("error"):
             errors.append(f"{table}: {result['error']}")
+        elif result.get("warning"):
+            summary.setdefault("warnings", []).append(result["warning"])
 
     summary["ok"] = not errors
     if errors:

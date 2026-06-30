@@ -13,6 +13,7 @@ EVENT_TYPES = (
     "SIGNAL_APPROVED",
     "SIGNAL_WAITING",
     "SIGNAL_REJECTED",
+    "CORRELATION_RISK",
     "LOT_CALCULATED",
     "SIGNAL_SEEDED",
     "SIGNAL_PUBLISHED",
@@ -68,7 +69,12 @@ def log_event(
     return row
 
 
-def log_gate_decision(signal_id: str, gate_result: dict[str, Any]) -> dict[str, Any]:
+def log_gate_decision(
+    signal_id: str,
+    gate_result: dict[str, Any],
+    *,
+    correlation_data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     decision = gate_result.get("decision", "")
     log_event(
         "SIGNAL_CHECKED",
@@ -78,8 +84,19 @@ def log_gate_decision(signal_id: str, gate_result: dict[str, Any]) -> dict[str, 
         payload={
             "correlation_risk_tag": gate_result.get("correlation_risk_tag"),
             "suggested_action": gate_result.get("suggested_action"),
+            "correlation_data": correlation_data,
         },
     )
+    if correlation_data and correlation_data.get("conflict"):
+        from src.correlation import correlation_warning_note
+
+        log_event(
+            "CORRELATION_RISK",
+            signal_id=signal_id,
+            event_note=correlation_warning_note(correlation_data),
+            status_after=decision,
+            payload=correlation_data,
+        )
     event = _DECISION_TO_EVENT.get(decision)
     if event:
         return log_event(

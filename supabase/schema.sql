@@ -22,6 +22,7 @@ create table if not exists signals (
   dxy_direction text,
   us10y_direction text,
   correlation_risk_tag text,
+  correlation_data jsonb,
   setup_name text,
   status text not null default 'draft',
   decision text,
@@ -61,7 +62,7 @@ create table if not exists activity_logs (
   signal_id text,
   trade_id uuid references trades(id),
   event_type text not null check (event_type in (
-    'SIGNAL_CREATED', 'SIGNAL_CHECKED', 'SIGNAL_SEEDED', 'SIGNAL_PUBLISHED',
+    'SIGNAL_CREATED', 'SIGNAL_CHECKED', 'CORRELATION_RISK', 'SIGNAL_SEEDED', 'SIGNAL_PUBLISHED',
     'LOT_CALCULATED', 'SIGNAL_APPROVED', 'SIGNAL_WAITING', 'SIGNAL_REJECTED',
     'ENTRY_TRIGGERED', 'SPREAD_WARNING', 'PENDING_CANCELLED',
     'TP1_HIT', 'TP2_HIT', 'SL_HIT', 'TRADE_CLOSED', 'JOURNAL_UPDATED'

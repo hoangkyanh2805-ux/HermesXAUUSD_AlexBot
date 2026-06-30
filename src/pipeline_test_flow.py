@@ -10,7 +10,7 @@ from src.common import data_path, load_json, save_json
 from src.dashboard import export_state, get_summary
 from src.market_context import get_market_context, write_market_context
 from src.signal_registry import create_signal
-from src.telegram_router import _cmd_calc_lot, _cmd_check_signal, _cmd_publish_signal, _cmd_seed_signal
+from src.telegram_router import _cmd_calc_lot, _cmd_check_signal, _cmd_publish_signal, _cmd_seed_signal, clear_pipeline_caches
 
 
 SIG_TEST_001 = {
@@ -66,6 +66,8 @@ def _remove_signal(signal_id: str) -> None:
 
 def run_sig_test_001(*, dry_run: bool = True, reset: bool = True) -> dict[str, Any]:
     """Run full sig-test-001 sequence."""
+    # Fixture uses mock macro directions for deterministic gate (live tested separately).
+    os.environ["MARKET_DATA_LIVE"] = "false"
     if dry_run:
         os.environ["SUPABASE_PIPELINE_DRY_RUN"] = "true"
     else:
@@ -78,6 +80,7 @@ def run_sig_test_001(*, dry_run: bool = True, reset: bool = True) -> dict[str, A
     if reset:
         _remove_signal(sid)
         _reset_risk_state()
+        clear_pipeline_caches()
 
     ctx = get_market_context(
         spread_pts=25.0,

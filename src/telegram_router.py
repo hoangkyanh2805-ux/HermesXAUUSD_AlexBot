@@ -8,6 +8,7 @@ from typing import Any
 from src.ai_brain import print_brain, summarize
 from src.activity_log import log_event, log_gate_decision
 from src.common import data_path, load_json, save_json
+from src.correlation import build_correlation_data
 from src.dashboard import export_state, get_summary, print_dashboard
 from src.desk_config import load_market_config
 from src.journal import append_journal, get_entry
@@ -29,6 +30,13 @@ from src.volume_tracker import record_volume
 _gate_cache: dict[str, dict] = {}
 _lot_cache: dict[str, dict] = {}
 _seeding_cache: dict[str, dict] = {}
+
+
+def clear_pipeline_caches() -> None:
+    """Reset in-memory pipeline state (tests / verify runs)."""
+    _gate_cache.clear()
+    _lot_cache.clear()
+    _seeding_cache.clear()
 
 
 def _load_signal(signal_id: str) -> dict | None:
@@ -183,8 +191,6 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
     ctx = get_market_context(
         news_risk=signal.get("news_risk", "low"),
         spread_pts=signal.get("spread_pts"),
-        dxy_direction=signal.get("dxy_direction", "neutral"),
-        us10y_direction=signal.get("us10y_direction", "neutral"),
         xauusd_price=signal.get("xauusd_price"),
     )
     write_market_context(ctx)
@@ -210,14 +216,25 @@ def _cmd_check_signal(args: list[str]) -> dict[str, Any]:
                 ]
                 result["suggested_action"] = "Run /replay and fix setup before publish."
 
+    correlation_data = build_correlation_data(
+        signal_direction=signal.get("direction", ""),
+        gate_result=result,
+        market_ctx=ctx,
+    )
+    result["correlation_data"] = correlation_data
+
     data = load_json(data_path("signals.json"), {"signals": []})
     for s in data.get("signals", []):
         if s.get("signal_id") == signal_id:
             s["correlation_risk_tag"] = result.get("correlation_risk_tag")
+            s["correlation_data"] = correlation_data
+            s["dxy_direction"] = ctx.get("dxy_direction")
+            s["us10y_direction"] = ctx.get("us10y_direction")
     save_json(data_path("signals.json"), data)
 
     _gate_cache[signal_id] = result
     _log_signal_audit(signal_id, result)
+    log_gate_decision(signal_id, result, correlation_data=correlation_data)
     write_pipeline_step("checked", signal_id)
     return {"ok": True, "data": result}
 

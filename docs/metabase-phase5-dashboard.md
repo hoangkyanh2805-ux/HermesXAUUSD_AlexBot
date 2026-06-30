@@ -13,7 +13,26 @@ Row 3 — Risk + spread audit
 Row 4 — Signal decisions + trade outcomes
 ```
 
-## How to add each card
+## Automated import (recommended)
+
+1. Copy credentials:
+
+```powershell
+copy metabase\env.example metabase\.env
+```
+
+2. Edit `metabase/.env` — set `METABASE_EMAIL` and `METABASE_PASSWORD` (Metabase login, not Supabase).
+
+3. Run:
+
+```powershell
+python scripts/import_metabase_dashboard.py
+```
+
+Creates collection + **20 cards** + dashboard **Hermes XAUUSD IB Desk** automatically.  
+Open the printed `http://localhost:3000/dashboard/<id>` URL.
+
+## Manual import (alternative)
 
 1. Metabase → **New** → **SQL query**
 2. Select database `Hermes XAUUSD Supabase`

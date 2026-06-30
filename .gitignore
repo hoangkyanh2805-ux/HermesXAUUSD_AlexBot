@@ -2,6 +2,7 @@
 .env
 telegram/.env
 supabase/.env
+metabase/.env
 metabase/metabase.jar
 metabase/data/
 plugins/
